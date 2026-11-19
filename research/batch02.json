@@ -1,0 +1,55 @@
+{
+ "hiap-joo": {
+  "recommend": true, "tier": "top", "googleRating": 4.2, "googleCount": 2853,
+  "tags": ["面包糕点", "老字号", "排队名店", "只收现金"],
+  "caveat": "排队长但出货快（约 3 分钟一位）· 只收现金 · 下午 4 点后人较少",
+  "mustEat": [{"name": "柴烧香蕉蛋糕", "price": "RM13 / 盒 10 片"}, {"name": "椰丝面包", "price": "RM6 / 4 个"}, {"name": "咖啡蛋糕", "price": "RM16"}, {"name": "牛油糖面包", "price": "RM6 / 2 个"}],
+  "priceNote": "2026 年 Google 食客记录",
+  "note": "1919 年的柴窑烤面包店，香蕉蛋糕被提到上千次，几乎一致说新鲜松软。排队是常态但店员很快。只有极少数人觉得不值得。新山老街必买。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（4 周前）", "url": "https://www.google.com/maps/place/Hiap+Joo+Bakery/@1.4566896,103.7643728,17z", "summary": "排队但移动快，香蕉蛋糕刚出炉。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Hiap+Joo+Bakery/@1.4566896,103.7643728,17z", "summary": "大太阳下排长队，但每人 3 分钟内拿到。只收现金。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Hiap+Joo+Bakery/@1.4566896,103.7643728,17z", "summary": "下午 4 点去不用排队，香蕉面包温热松软。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Hiap+Joo+Bakery/@1.4566896,103.7643728,17z", "summary": "期待很高，但觉得香蕉蛋糕令人失望。", "signals": [-1, null, null]}
+  ]
+ },
+ "kam-long-city": {
+  "recommend": true, "tier": "top", "googleRating": 4.2, "googleCount": 2232,
+  "tags": ["咖喱鱼头", "老字号", "有冷气"],
+  "caveat": "饭点要排队 · 价格偏高、小份鱼肉不多",
+  "mustEat": [{"name": "咖喱鱼头（小）", "price": "RM32"}, {"name": "咖喱鱼尾"}, {"name": "豆皮", "price": "RM16"}, {"name": "羊角豆"}],
+  "priceNote": "价钱为 2025–2026 年食客记录；人均约 RM20–60",
+  "note": "新山 43 年老店，咖喱香浓、鱼头新鲜是多数评论的重点。也有人说近期椰浆味变重、偏温和，小份鱼肉少、价格贵。早上 10:30 前去不用排，有冷气区。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（1 周前）", "url": "https://www.google.com/maps/place/Kam+Long+Ah+Zai+Curry+Fish+Head/@1.4592449,103.7649131,17z", "summary": "仍然排很多人，但觉得咖喱比以前温和、椰浆味重。", "signals": [0, null, 1]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Kam+Long+Ah+Zai+Curry+Fish+Head/@1.4592449,103.7649131,17z", "summary": "10:30 去不挤，选了冷气区；鱼尾和咖喱都好。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Kam+Long+Ah+Zai+Curry+Fish+Head/@1.4592449,103.7649131,17z", "summary": "咖喱浓郁好吃，但冷气区有苍蝇。", "signals": [1, -1, 1]},
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Kam+Long+Ah+Zai+Curry+Fish+Head/@1.4592449,103.7649131,17z", "summary": "小份 RM32 鱼肉和菜都很少，觉得不值。", "signals": [-1, null, null]},
+   {"label": "Google 地图 · 食客（3 个月前）", "url": "https://www.google.com/maps/place/Kam+Long+Ah+Zai+Curry+Fish+Head/@1.4592449,103.7649131,17z", "summary": "鱼头每次都新鲜，咖喱浓郁。", "signals": [1, null, 1]}
+  ]
+ },
+ "hua-mui-jalan-trus": {
+  "recommend": true, "tier": "top", "googleRating": 4.3, "googleCount": 5612,
+  "tags": ["海南茶室", "老字号", "早餐"],
+  "caveat": "早餐时段常排队（约 30 分钟）· 楼上座位的楼梯很陡",
+  "mustEat": [{"name": "海南鸡扒"}, {"name": "咖椰牛油厚吐司"}, {"name": "Mee Siam 配 Otak"}, {"name": "鸡扒椰浆饭"}, {"name": "海鲜炒粿条"}],
+  "priceNote": "人均约 RM20–40，2026 年食客记录",
+  "note": "1946 年开业的海南茶室总店。海南鸡扒和厚片咖椰吐司最多人推荐，炒粿条、Mee Siam 也有好评；咖喱鸡有人说可跳过。周末早餐要排队。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Restoran+Hua+Mui/@1.4573123,103.7642822,17z", "summary": "招牌海南鸡扒、炒粿条、鸡扒椰浆饭都好。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Restoran+Hua+Mui/@1.4573123,103.7642822,17z", "summary": "4 人排了约 30 分钟；蒜香面包值得试。", "signals": [1, null, 0]},
+   {"label": "Google 地图 · 食客（2 周前）", "url": "https://www.google.com/maps/place/Restoran+Hua+Mui/@1.4573123,103.7642822,17z", "summary": "海鲜炒粿条很香，咖喱鸡可以跳过。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Restoran+Hua+Mui/@1.4573123,103.7642822,17z", "summary": "总店体验一般，楼梯几乎垂直。", "signals": [0, null, 1]}
+  ]
+ },
+ "nancy": {
+  "recommend": false, "googleRating": 3.9, "googleCount": 3046,
+  "notRecommended": "近一年多位食客说水准下降、偏咸，也有人看到员工手指碰到甜汤",
+  "note": "老牌娘惹馆，娘惹鸡、Pie Tee 和叻沙仍有人喜欢，但近一年说水准下降、偏咸或有油耗味的评论明显增多，也有员工手指碰到甜汤的卫生投诉。不列入推荐。"
+ },
+ "jonker-88": {
+  "recommend": false, "googleRating": 3.8, "googleCount": 4375,
+  "notRecommended": "近几个月多位食客说煎蕊、叻沙退步，老板和员工态度差",
+  "note": "鸡场街老店，环境有怀旧感，但近几个月说煎蕊份量少、叻沙变咸或像糊、老板和员工态度差的评论很多。不列入推荐。"
+ }
+}

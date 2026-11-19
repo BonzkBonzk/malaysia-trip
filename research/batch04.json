@@ -1,0 +1,70 @@
+{
+ "klebang": {
+  "recommend": true, "tier": "top", "googleRating": 4.1, "googleCount": 12730,
+  "tags": ["饮料", "排队名店", "只收现金", "平价"],
+  "caveat": "人多又热、座位挤 · 偏甜可要求少糖 · 只收现金",
+  "mustEat": [{"name": "椰子沙冰（加香草冰淇淋）"}, {"name": "Nasi Lemak"}, {"name": "Otak-otak 马来鱼饼"}],
+  "priceNote": "人均 RM1–20，2026 年食客记录",
+  "note": "马六甲 Klebang 的椰子沙冰老店，一万多条评论 4.1。椰子沙冰加冰淇淋最多人推荐，出货快；缺点是很热、很挤，有人觉得太甜、糕点选择变少。路过值得停。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（3 个月前）", "url": "https://www.google.com/maps/place/Klebang+Original+Coconut+Shake/@2.2156832,102.2068627,17z", "summary": "原本怀疑，喝了加香草冰淇淋的椰子沙冰才明白为什么红。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Klebang+Original+Coconut+Shake/@2.2156832,102.2068627,17z", "summary": "排队但出得快，便宜；对自己来说太甜。只收现金。", "signals": [0, null, 1]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Klebang+Original+Coconut+Shake/@2.2156832,102.2068627,17z", "summary": "椰子沙冰不错，但场地非常挤、非常热。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Klebang+Original+Coconut+Shake/@2.2156832,102.2068627,17z", "summary": "糕点选择变少，建议别点加冰淇淋的特别版。", "signals": [-1, null, null]}
+  ]
+ },
+ "osm-kluangcendolkader-2.0314-103.3203": {
+  "title": "Kluang Cendol Kader", "lat": 2.0313855, "lon": 103.3202953, "area": "joh",
+  "googleArea": "Jalan Dato' Kapten Ahmad, Kluang", "foodKind": "dessert", "tag": "印度式煎蕊",
+  "detail": "居銮老字号煎蕊档，只卖一种原味煎蕊，配自家红豆。",
+  "recommend": true, "tier": "top", "googleRating": 4.4, "googleCount": 346,
+  "tags": ["煎蕊", "甜点小吃", "老字号", "平价"],
+  "caveat": "店小很挤 · 只有一种口味",
+  "mustEat": [{"name": "原味煎蕊（自家红豆）", "price": "RM2.50"}, {"name": "Mee Goreng"}],
+  "priceNote": "2025–2026 年食客记录",
+  "note": "评论几乎一致称赞椰浆香浓、煎蕊条软滑、红豆自制，价钱只要 RM2.50。店面老旧拥挤，但不影响口碑。经过居銮值得停。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（1 周前）", "url": "https://www.google.com/maps/place/Kluang+Cendol+Kader/@2.0313855,103.3202953,17z", "summary": "老店很挤，但煎蕊好吃，只有一种 RM2.50。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Kluang+Cendol+Kader/@2.0313855,103.3202953,17z", "summary": "煎蕊条是吃过最好的，口感软滑。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（3 个月前）", "url": "https://www.google.com/maps/place/Kluang+Cendol+Kader/@2.0313855,103.3202953,17z", "summary": "原味偏甜，可以要求少糖。", "signals": [0, null, 1]},
+   {"label": "Google 地图 · 食客（6 个月前）", "url": "https://www.google.com/maps/place/Kluang+Cendol+Kader/@2.0313855,103.3202953,17z", "summary": "不会太甜，红豆口感好，傍晚去仍有人。", "signals": [1, null, null]}
+  ]
+ },
+ "osm-muarsouphouse-2.0455-102.5664": {
+  "title": "Muar Soup House 麻坡汤之家", "aliases": ["麻坡汤之家", "Muar Soup House"], "lat": 2.045471, "lon": 102.56644, "area": "joh",
+  "googleArea": "47 Jalan Sisi, Muar", "foodKind": "restaurant", "tag": "羊骨汤 Sup Gearbox",
+  "recommend": true, "tier": "more", "googleRating": 3.9, "googleCount": 2518,
+  "tags": ["马来菜", "宵夜", "平价"],
+  "caveat": "只点羊骨汤和罗惹，其它菜评价差 · 写营业到 1 点，实际约 12 点前收",
+  "mustEat": [{"name": "羊骨汤 Sup Gearbox"}, {"name": "罗惹 Rojak", "price": "约 RM10"}, {"name": "Mee Bandung Muar"}],
+  "priceNote": "人均约 RM20–40，2025–2026 年食客记录",
+  "note": "麻坡的宵夜档。羊骨汤和罗惹是一致好评的两样，炒米粉、椰浆饭、香饭等评价差。营业时间比 Google 写的早收。只为羊骨汤来可以。"
+ },
+ "osm-kopitiamthongkee-3.5242-101.9060": {
+  "title": "Thong Kee Hainan Kopitiam 溏记海南茶室", "aliases": ["溏记海南茶室", "Kopitiam Thong Kee"], "lat": 3.52421, "lon": 101.906018, "area": "phg",
+  "googleArea": "4 Jalan Chui Yin, Bentong", "foodKind": "restaurant", "tag": "海南茶室",
+  "recommend": true, "tier": "more", "googleRating": 3.9, "googleCount": 1068,
+  "tags": ["海南茶室", "早餐", "平价"],
+  "caveat": "招牌饮料和牛角包好评，炒粿条评价两极 · 没冷气",
+  "mustEat": [{"name": "1+1 海南茶（咖啡＋茶）"}, {"name": "火腿芝士牛角包"}, {"name": "咖椰吐司"}],
+  "priceNote": "人均 RM1–20，2026 年食客记录",
+  "note": "文冬有人气的早餐茶室。1+1 海南茶、火腿芝士牛角包和吐司最多人推荐；炒粿条有人说有锅气，也有人说清淡没锅气、饮料偏贵。去文冬顺路吃早餐可以。"
+ },
+ "nasi-dagang-atas-tol-kampung": {
+  "title": "Nasi Dagang Atas Tol（Kg Atas Tol 总店）", "aliases": ["Nasi Dagang Atas Tol - Kg Atas Tol"], "lat": 5.2567544, "lon": 103.1329587, "area": "trg",
+  "googleArea": "Kampung Atas Tol, Kuala Terengganu", "foodKind": "restaurant", "tag": "Nasi Dagang",
+  "detail": "登嘉楼最出名的 Nasi Dagang 早餐店之一，场地大、停车方便。",
+  "recommend": true, "tier": "top", "googleRating": 4.5, "googleCount": 3653,
+  "tags": ["马来菜", "早餐", "排队名店", "平价"],
+  "caveat": "早上要排队，晚到菜色变少",
+  "mustEat": [{"name": "Nasi Dagang 配咖喱鱼"}, {"name": "Keropok Lekor 炸鱼条"}, {"name": "Kopi"}],
+  "priceNote": "人均 RM1–20，2026 年食客记录",
+  "note": "三千多条评论 4.5。咖喱鱼嫩、饭香、点餐流程顺是多数评论的重点，也有食客特别提到环境干净、食物有盖好。晚去选择少。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Nasi+Dagang+Atas+Tol/@5.2567544,103.1329587,17z", "summary": "小时候吃到现在最好的 Nasi Dagang 和炸鱼条，鱼很嫩；排队看起来长但快。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（6 个月前）", "url": "https://www.google.com/maps/place/Nasi+Dagang+Atas+Tol/@5.2567544,103.1329587,17z", "summary": "最在意卫生，这里环境干净整齐，食物都有盖好。", "signals": [1, 1, null]},
+   {"label": "Google 地图 · 食客（4 周前）", "url": "https://www.google.com/maps/place/Nasi+Dagang+Atas+Tol/@5.2567544,103.1329587,17z", "summary": "场地大、停车方便、流程有序；晚到剩下的选择少。", "signals": [null, null, 1]},
+   {"label": "Google 地图 · 食客（9 个月前）", "url": "https://www.google.com/maps/place/Nasi+Dagang+Atas+Tol/@5.2567544,103.1329587,17z", "summary": "食物普通，选择主要只有 Nasi Dagang。", "signals": [-1, null, null]}
+  ]
+ }
+}

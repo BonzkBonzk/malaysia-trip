@@ -1,0 +1,58 @@
+{
+ "hameediyah-campbell": {
+  "recommend": true, "tier": "top", "googleRating": 4.1, "googleCount": 7431,
+  "tags": ["扁担饭", "印度回教菜", "米其林推荐", "老字号", "有冷气"],
+  "caveat": "菜按件计价偏贵，点菜前先问价 · 饭点要排队",
+  "mustEat": [{"name": "扁担饭 Nasi Kandar"}, {"name": "洋葱鸡香饭 Briyani Ayam Bawang"}, {"name": "Murtabak 印度馅料煎饼"}, {"name": "羊腿"}],
+  "priceNote": "人均约 RM20–80，视加的菜而定（2026 年食客记录）",
+  "note": "槟城老牌扁担饭，七千多条评论仍有 4.1。咖喱香料味足、洋葱鸡香饭和 Murtabak 常被点名；常见缺点是逐项计价偏贵、晚去菜偏冷，少数人觉得员工态度差。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（1 周前）", "url": "https://www.google.com/maps/place/Hameediyah+Restaurant/@5.41864,100.3325087,17z", "summary": "咖喱选择多、份量大，吃得满足。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（1 个月前）", "url": "https://www.google.com/maps/place/Hameediyah+Restaurant/@5.41864,100.3325087,17z", "summary": "食物很好，但员工待客态度很差。", "signals": [1, null, -1]},
+   {"label": "Google 地图 · 食客（1 周前）", "url": "https://www.google.com/maps/place/Hameediyah+Restaurant/@5.41864,100.3325087,17z", "summary": "饭和咖喱还可以，RM25 的珍珠鸡不值。", "signals": [-1, null, 0]},
+   {"label": "Google 地图 · 食客（2 个月前）", "url": "https://www.google.com/maps/place/Hameediyah+Restaurant/@5.41864,100.3325087,17z", "summary": "洋葱鸡香饭每次必点，人多出餐仍快，有冷气。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（4 个月前）", "url": "https://www.google.com/maps/place/Hameediyah+Restaurant/@5.41864,100.3325087,17z", "summary": "咖喱还行，但鸡肉不热。", "signals": [-1, null, null]}
+  ]
+ },
+ "teochew-chendul-keng-kwee": {
+  "recommend": true, "tier": "more", "googleRating": 4.0, "googleCount": 8775,
+  "tags": ["煎蕊", "甜点小吃", "老字号"],
+  "caveat": "名气大，椰浆偏稀、甜度低，评价两极 · 同场的亚参叻沙更多人称赞",
+  "mustEat": [{"name": "潮州煎蕊", "price": "RM5.50"}, {"name": "亚参叻沙"}, {"name": "蚵仔煎"}],
+  "priceNote": "煎蕊价钱为 2026 年食客记录",
+  "note": "槟城最出名的煎蕊，到槟城的人多会来。不少人觉得清爽好吃，也有不少人说椰浆稀、份量少、名不副实。同一处的亚参叻沙反而好评更一致。顺路可以试，不必专程。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（1 周前）", "url": "https://www.google.com/maps/place/Penang+Road+Famous+Teochew+Chendul/@5.4170707,100.3308566,17z", "summary": "椰浆偏稀，觉得煎蕊不算惊艳。", "signals": [-1, null, null]},
+   {"label": "Google 地图 · 食客（4 个月前）", "url": "https://www.google.com/maps/place/Penang+Road+Famous+Teochew+Chendul/@5.4170707,100.3308566,17z", "summary": "椰糖香浓，班兰煎蕊条香。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（3 个月前）", "url": "https://www.google.com/maps/place/Penang+Road+Famous+Teochew+Chendul/@5.4170707,100.3308566,17z", "summary": "亚参叻沙是亮点，好吃到再叫一碗。", "signals": [1, null, null]},
+   {"label": "Google 地图 · 食客（3 周前）", "url": "https://www.google.com/maps/place/Penang+Road+Famous+Teochew+Chendul/@5.4170707,100.3308566,17z", "summary": "不如以前，煎蕊少、椰浆不够。", "signals": [-1, null, null]}
+  ]
+ },
+ "osm-mingcourthongkongdimsum-4.5970-101.0863": {
+  "title": "Ming Court Hong Kong Dim Sum 明阁香港点心", "aliases": ["明阁香港点心", "Ming Court Hong Kong Dim Sum"], "lat": 4.5970208, "lon": 101.0862729, "area": "per",
+  "googleArea": "32 Jalan Leong Sin Nam, Ipoh", "foodKind": "restaurant", "tag": "传统点心",
+  "detail": "怡保老牌点心楼，服务员端着托盘走动让你挑。",
+  "recommend": true, "tier": "top", "googleRating": 3.9, "googleCount": 3661,
+  "tags": ["点心", "老字号", "早餐", "非清真"],
+  "caveat": "星数不高主要因为份量小、早上人多；味道多数人认可 · 8:30 前到",
+  "mustEat": [{"name": "烧卖"}, {"name": "黑芝麻糊"}, {"name": "鱼丸"}, {"name": "蒸包"}],
+  "priceNote": "人均约 RM20–60，2026 年食客记录",
+  "note": "怡保老派点心，托盘式上菜。近几个月的评论多数称赞味道和服务，主要缺点是份量小、要多点几样，早上 8:30 后开始排队。少数人觉得名过其实。",
+  "evidence": [
+   {"label": "Google 地图 · 食客（3 个月前）", "url": "https://www.google.com/maps/place/Ming+Court+Hong+Kong+Dim+Sum/@4.5970208,101.0862729,17z", "summary": "老牌点心好吃，建议 8:30 前到。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（2 周前）", "url": "https://www.google.com/maps/place/Ming+Court+Hong+Kong+Dim+Sum/@4.5970208,101.0862729,17z", "summary": "份量小可多点几样，味道很好。", "signals": [1, null, 1]},
+   {"label": "Google 地图 · 食客（3 周前）", "url": "https://www.google.com/maps/place/Ming+Court+Hong+Kong+Dim+Sum/@4.5970208,101.0862729,17z", "summary": "觉得被高估，份量小、味道普通。", "signals": [-1, null, -1]},
+   {"label": "Google 地图 · 食客（4 个月前）", "url": "https://www.google.com/maps/place/Ming+Court+Hong+Kong+Dim+Sum/@4.5970208,101.0862729,17z", "summary": "托盘一直送来，有点推销过度，食物普通。", "signals": [0, null, 0]}
+  ]
+ },
+ "osm-cendolhajishariff-2.7274-101.9401": {
+  "title": "Cendol Haji Shariff", "aliases": ["哈芝沙里煎蕊"], "lat": 2.7273048, "lon": 101.9400997, "area": "ns",
+  "recommend": false, "googleRating": 3.9, "googleCount": 3496,
+  "notRecommended": "芙蓉本地人反映罗惹和煎蕊近年退步，椰浆稀"
+ },
+ "osm-kedaikopichungwah-2.1950-102.2484": {
+  "title": "Chung Wah Chicken Rice Ball 中华鸡饭", "aliases": ["中华鸡饭 Kedai Kopi Chung Wah", "Kedai Kopi Chung Wah"], "lat": 2.1949582, "lon": 102.2484586, "area": "mel",
+  "recommend": false, "googleRating": 3.3, "googleCount": 739,
+  "notRecommended": "Google 3.3，近期多人说水准下降，有人外带少给饭粒"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "osm-daddycendol-2.0320-103.3201": {
+  "title": "Daddy Cendol", "lat": 2.0320777, "lon": 103.3201467, "area": "joh",
+  "googleArea": "Jalan Dato Capt. Ahmad, Kluang", "foodKind": "dessert", "tag": "煎蕊",
+  "recommend": true, "tier": "more", "googleRating": 4.7, "googleCount": 89,
+  "tags": ["煎蕊", "甜点小吃", "平价"],
+  "caveat": "评论只有 89 条且集中在近期，还要观察 · 同一条街就是 Cendol Kader",
+  "mustEat": [{"name": "椰糖煎蕊"}, {"name": "芒果煎蕊"}, {"name": "ABC 冰"}],
+  "note": "居銮壁画街旁的小档，评论都说老板娘亲切、煎蕊不太甜、份量足。评论数少又集中在最近几周，可信度比老字号低，先列为更多推荐。"
+ },
+ "osm-kafekirikanan-1.8494-102.9297": {
+  "title": "Kafe Kiri Kanan", "lat": 1.8494164, "lon": 102.9297607, "area": "joh",
+  "googleArea": "92 Jalan Rahmat, Batu Pahat", "foodKind": "restaurant", "tag": "娘惹风味咖啡馆",
+  "recommend": true, "tier": "more", "googleRating": 4.6, "googleCount": 1605,
+  "tags": ["娘惹菜", "咖啡馆", "有冷气"],
+  "caveat": "有食客怀疑评分被「留评送甜品」拉高 · 价格偏高",
+  "mustEat": [{"name": "黄梨魔鬼鱼咖喱 Ikan Pari Nanas"}, {"name": "亚参辣鱼"}, {"name": "招牌叻沙"}],
+  "priceNote": "人均约 RM20–80，2026 年食客记录",
+  "note": "峇株巴辖市区的娘惹风味咖啡馆，评论一致称赞员工亲切、魔鬼鱼和叻沙好吃。也有食客提醒评论量可能和送甜品换评论有关，所以只列为更多推荐。"
+ },
+ "osm-kafetigatujuh-2.7280-101.9396": {
+  "title": "Tigatujuh Coffee", "aliases": ["TIGATUJUH COFFEE", "Kafe Tiga Tujuh"], "lat": 2.7279662, "lon": 101.939579, "area": "ns",
+  "googleArea": "37 Jalan Yam Tuan, Seremban", "foodKind": "drinks", "tag": "咖啡馆",
+  "recommend": true, "tier": "more", "googleRating": 4.7, "googleCount": 170,
+  "tags": ["咖啡馆", "甜点小吃", "有冷气"],
+  "caveat": "灯光昏暗、适合安静坐坐 · 甜点小批量，晚去可能卖完",
+  "mustEat": [{"name": "Dirty Latte"}, {"name": "提拉米苏"}, {"name": "日式布丁"}, {"name": "抹茶"}],
+  "note": "芙蓉老街的咖啡馆，咖啡和提拉米苏、日式布丁评价一致好，环境安静。适合在芙蓉吃完煎蕊或罗惹后坐一下。"
+ },
+ "osm-nasidagangvintage-5.3367-103.1396": {
+  "title": "Nasi Dagang Vintage", "lat": 5.3367981, "lon": 103.1394875, "area": "trg",
+  "recommend": false, "googleRating": 4.2, "googleCount": 411,
+  "notRecommended": "近一年评价两极，有人说贵又普通；同市的 Atas Tol 总店更稳"
+ }
+}
