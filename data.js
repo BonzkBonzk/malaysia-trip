@@ -47,7 +47,23 @@ const cities = [
 ['sandakan','山打根','Sandakan','sbh',5.8391,118.1171],
 ['labuan','纳闽','Labuan','lab',5.2805,115.2470]
 ].map(([id,title,en,area,lat,lon])=>({id,title,en,area,lat,lon,east:regions.find(r=>r.id===area).east}));
-const defaultStops=['kuala-lumpur','johor-bahru','melaka'];
+cities.push(...[
+ ['bukit-bintang','武吉免登','Bukit Bintang','kl',3.1466,101.7109],
+ ['kampung-baru','甘榜峇鲁','Kampung Baru','kl',3.1650,101.7049],
+ ['brickfields','十五碑','Brickfields','kl',3.1307,101.6844],
+ ['ttdi','TTDI','Taman Tun Dr Ismail','kl',3.1432,101.6302],
+ ['bukit-jalil','武吉加里尔','Bukit Jalil','kl',3.0585,101.6916],
+ ['shah-alam','莎阿南','Shah Alam','sel',3.0738,101.5183],
+ ['klang','巴生','Klang','sel',3.0449,101.4456],
+ ['kuala-selangor','瓜拉雪兰莪','Kuala Selangor','sel',3.3364,101.2495],
+ ['sekinchan','适耕庄','Sekinchan','sel',3.5072,101.1057],
+ ['kuala-kubu-bharu','新古毛','Kuala Kubu Bharu','sel',3.5638,101.6580],
+ ['kajang','加影','Kajang','sel',2.9935,101.7889],
+ ['banting','万津','Banting','sel',2.8120,101.5031],
+ ['cyberjaya','赛城','Cyberjaya','sel',2.9213,101.6559],
+ ['sepang','雪邦','Sepang town','sel',2.6920,101.7493]
+].map(([id,title,en,area,lat,lon])=>({id,title,en,area,lat,lon,east:false})));
+const defaultStops=['kuala-lumpur','johor-bahru'];
 const basePlaces = [
  {id:'nancy',title:"Nancy’s Kitchen",category:'food',tag:'娘惹菜',area:'mel',lat:2.1967,lon:102.2347,detail:'位于 Kota Laksamana，可看看官方菜单的娘惹菜和糕点。',hours:'Mo,We-Th 11:00-17:00; Fr-Su 11:00-21:00; Tu off',hoursText:'周一、三、四 11:00–17:00 · 周五至周日 11:00–21:00',price:'查看菜单',source:'https://eatatnancyskit.com/',duration:55},
  {id:'river',title:'Melaka River Cruise',category:'attraction',tag:'马六甲河游船',area:'mel',lat:2.2012,lon:102.2503,detail:'从 Pengkalan Rama 码头上船，船程约 45 分钟。',hours:'Mo-Su 09:00-23:00',hoursText:'官网列 09:00–23:00 · 闭航视天气',price:'本地成人 RM25 起 · 以购票页为准',source:'https://www.visitmelaka.com.my/index.php/nature-adventure/recreation/124-melaka-river-cruise',tickets:'https://ticket.melakarivercruise.my/',duration:65},

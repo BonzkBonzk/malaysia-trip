@@ -4,7 +4,8 @@ const categoryNames={food:'美食',attraction:'景点',fuel:'油站'};
 const icons={food:'♨',attraction:'◇',fuel:'⛽'};
 const metrics=['食物','卫生','服务'];
 const city=id=>cities.find(p=>p.id===id)||customStops.get(id);
-const region=id=>regions.find(p=>p.id===id);
+const areaState=id=>id?.split(':')[0];
+const region=id=>regions.find(p=>p.id===areaState(id));
 const storageKey='malaysia-trip.v1';
 function loadSaved(){
  try{return JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch{return {};}
@@ -21,14 +22,15 @@ const state={
  ratings:saved.ratings||{},evidence:saved.evidence||{},layovers:saved.layovers||{},category:'food',area:'route',scope:'all',
  preset:saved.preset||'balanced',minimum:Array.isArray(saved.minimum)?saved.minimum:[0,0,0],
  showUnknown:saved.showUnknown??true,demo:saved.demo??false,limit:saved.limit??15,
- fuelTarget:saved.fuelTarget??180,onlyOpen:false
+ fuelTarget:saved.fuelTarget??180,onlyOpen:false,
+ planLocked:saved.planLocked===true,planOrder:saved.planOrder||null,attractionSort:'recommended',onlyFeatured:false
 };
 function save(){
  try{
   localStorage.setItem(storageKey,JSON.stringify({
    ids:state.ids,customStops:state.ids.map(id=>customStops.get(id)).filter(Boolean),stay:state.stay,date:state.date,time:state.time,foodType:state.foodType,plan:state.plan,ratings:state.ratings,evidence:state.evidence,
    layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,
-   demo:state.demo,limit:state.limit,fuelTarget:state.fuelTarget
+   demo:state.demo,limit:state.limit,fuelTarget:state.fuelTarget,planLocked:state.planLocked,planOrder:state.planOrder
   }));
  }catch{}
 }
@@ -36,6 +38,7 @@ const routeStore=new Map();
 const livePlaces=new Map(basePlaces.map(p=>[p.id,p]));
 const placeNameIndex=new Map();
 for(const p of state.plan)if(!livePlaces.has(p.id))livePlaces.set(p.id,p);
+state.plan=state.plan.map(p=>livePlaces.get(p.id));
 let searchStatus='',searchLoading=false,searchToken=0,routeToken=0;
 let route=null,points=[],draft=state.ids.slice(),selectedPin='',mapBoundaries=[];
 let routeTime=new Map(),detours=new Map(),placeMatches=new Map(),activeRating=null,activeSwap=null;
@@ -91,10 +94,11 @@ async function calculate(userAction=false){
  selectedPin='';state.area='route';
  $('route-submit').disabled=true;
  routeMessage('正在计算道路距离…');
- renderAll();
+  if(canDriveTogether(nextPoints))setMapScope(drivingRegion(nextPoints[0])==='peninsular'?'west':'east');
+  renderAll();
  try{
    if(nextPoints.slice(1).some((p,i)=>straight(p,nextPoints[i])<.03))throw Error('duplicate');
-   if(nextPoints.some(p=>p.east!==nextPoints[0].east))throw Error('sea');
+   if(!canDriveTogether(nextPoints))throw Error('sea');
    const key=routeKey(nextPoints);
    if(!routeStore.has(key)){
      const raw=await requestRoad(nextPoints,true);
@@ -107,15 +111,16 @@ async function calculate(userAction=false){
    if(token!==routeToken)return;
    const messages={
      duplicate:'连续两个停留点太近，请换一个目的地。',
-     sea:'东西马之间需要另外安排航班或船程。可分别计算西马和东马的自驾路线。'
+     sea:'这些停留点分属不同陆路区域。请分开计算各地的自驾路线。'
    };
    routeMessage(messages[err.message]||'暂时算不到这条道路路线。仍可按城市找地点，稍后可再计算。',true);
  }finally{
    if(token===routeToken){
-     $('route-submit').disabled=false;
+     $('route-submit').disabled=state.planLocked;
      renderAll();
      if(userAction&&route)notify('路线已更新');
      void discoverPlaces();
+   refreshManualTimes();
    }
  }
 }
@@ -157,7 +162,7 @@ function mapFrames(w,h){
 }
 const featuredCities=new Set(['george-town','kuala-lumpur','johor-bahru','kuching','kota-kinabalu','kuala-terengganu']);
 function selectArea(area){
- state.area=area;selectedPin=area;state.category=state.category||'food';
+ state.area=area;selectedPin=areaState(area);state.category=state.category||'food';
  renderAll();
  void discoverPlaces();
 }
@@ -257,28 +262,63 @@ function mapHit(x,y){
  const feature=mapBoundaries.find(([name,polygons])=>region(featureNames[name])?.east===(frame.key==='east')&&polygons.some(poly=>inRing(p,poly[0])&&!poly.slice(1).some(hole=>inRing(p,hole))));
  return feature?featureNames[feature[0]]:null;
 }
-function googleDirections(stops){
- const coords=p=>p.lat.toFixed(6)+','+p.lon.toFixed(6);
- const params=new URLSearchParams({api:'1',origin:coords(stops[0]),destination:coords(stops.at(-1)),travelmode:'driving'});
- if(stops.length>2)params.set('waypoints',stops.slice(1,-1).map(coords).join('|'));
+function stateName(id){
+ const r=id&&region(id);
+ const names={kl:'Kuala Lumpur',sel:'Selangor',ns:'Negeri Sembilan',mel:'Melaka',joh:'Johor',phg:'Pahang',trg:'Terengganu',kel:'Kelantan',per:'Perak',pen:'Penang',ked:'Kedah',pls:'Perlis',put:'Putrajaya',srw:'Sarawak',sbh:'Sabah',lab:'Labuan'};
+ return r&&names[r.id];
+}
+function googleTarget(p){
+ if(p.id==='lodging'||(!p.mapsName&&(!p.en||p.id?.startsWith('custom-'))))return p.lat.toFixed(6)+','+p.lon.toFixed(6);
+ const name=p.mapsName||p.en, area=p.googleArea||stateName(p.area);
+ return [name,area&&name.toLowerCase()!==area.toLowerCase()?area:null,'Malaysia'].filter(Boolean).join(', ');
+}
+function googleDirections(stops,{fromHere=false}={}){
+ const end=stops.at(-1);
+ const params=new URLSearchParams({api:'1',destination:googleTarget(end),travelmode:'driving'});
+ if(end.googlePlaceId)params.set('destination_place_id',end.googlePlaceId);
+ if(fromHere)params.set('dir_action','navigate');
+ else{
+   params.set('origin',googleTarget(stops[0]));
+   if(stops[0].googlePlaceId)params.set('origin_place_id',stops[0].googlePlaceId);
+ }
+ if(stops.length>2){
+   const middle=stops.slice(1,-1);
+   params.set('waypoints',middle.map(googleTarget).join('|'));
+   if(middle.every(p=>p.googlePlaceId))params.set('waypoint_place_ids',middle.map(p=>p.googlePlaceId).join('|'));
+ }
  return 'https://www.google.com/maps/dir/?'+params;
+}
+function drivingRegion(p){
+ if(p.area==='lab'||(p.lon>=115.10&&p.lon<=115.31&&p.lat>=5.22&&p.lat<=5.43))return 'labuan';
+ return p.east||p.lon>=109?'borneo':'peninsular';
+}
+function canDriveTogether(stops){
+ return stops.length>=2&&stops.every(p=>drivingRegion(p)===drivingRegion(stops[0]));
 }
 function googleRouteSegments(stops){
  const segments=[];
  for(let i=0;i<stops.length-1;i+=4)segments.push(stops.slice(i,i+5));
  return segments;
 }
+function externalLink(url,label,className=''){
+ return '<a href="'+safe(url)+'" target="_blank" rel="noopener"'+(className?' class="'+className+'"':'')+'>'+safe(label)+'</a>';
+}
+function routeLinks(stops,prefix){
+ const path=stops.filter((p,i)=>i===0||straight(p,stops[i-1])>=.03);
+ if(!canDriveTogether(path))return '';
+ const segments=googleRouteSegments(path);
+ return segments.map((group,i)=>externalLink(googleDirections(group),
+   segments.length===1?prefix:prefix+' '+(i+1)+' · '+group[0].title+' → '+group.at(-1).title)).join('');
+}
 function renderGoogleRoute(){
- const navigation=$('google-route');
- if(points.length<2||points.some(p=>p.east!==points[0].east)||points.slice(1).some((p,i)=>straight(p,points[i])<.03)){
-   navigation.innerHTML='';
-   return;
- }
- const segments=googleRouteSegments(points);
- navigation.innerHTML=segments.map(stops=>{
-   const label=segments.length===1?'Google Maps 实时路况及导航':stops[0].title+' → '+stops.at(-1).title;
-   return '<a href="'+safe(googleDirections(stops))+'" target="_blank" rel="noopener">'+safe(label)+'</a>';
- }).join('')+(segments.length>1?'<p class="fine">途经地较多，按以上分段打开 Google Maps。</p>':'');
+ const stops=draft.map(city);
+ const stay=parseCoordinates($('stay-coords').value);
+ if(stay)stops[0]={...stay,id:'lodging',title:$('stay-name').value.trim()||'我的住宿',east:stay.lon>=109};
+ const destination=stops.at(-1);
+ const validOrigin=!$('stay-coords').value.trim()||Boolean(stay);
+ $('google-route').innerHTML=externalLink(googleDirections([destination],{fromHere:true}),'从当前位置导航 · '+destination.title)
+   +(validOrigin?routeLinks(stops,'Google Maps · 查看规划路线'):'')
+   +(!canDriveTogether(stops)?'<p class="fine">这些地点分属不同陆路区域，请分别规划自驾路线。</p>':'');
 }
 function renderRouteSummary(){
  renderGoogleRoute();
@@ -291,6 +331,7 @@ function renderRouteSummary(){
  route.legs.map(leg=>'<span>'+safe(leg.from.title)+' → '+safe(leg.to.title)+' <b>'+safe(km(leg.km))+'</b></span>').join('');
 }
 function simplifiedTitle(name){return name.normalize('NFKD').toLowerCase().replace(/\s*\((?:store|restaurant)\)$/,'').replace(/[^a-z0-9\u3400-\u9fff]/g,'');}
+function placeAliases(p){return [p.title,p.mapsName,...(p.aliases||[])].filter(Boolean).map(simplifiedTitle);}
 const niceSubtype={restaurant:'餐馆',cafe:'咖啡馆',fast_food:'快餐',food_court:'美食中心',ice_cream:'冰品',bakery:'面包店',attraction:'景点',museum:'博物馆',zoo:'动物园',theme_park:'主题公园',viewpoint:'观景点',monument:'纪念地',castle:'古迹',waterfall:'瀑布',garden:'花园',park:'公园',fuel:'油站'};
 function inRing(point,ring){
  let inside=false;
@@ -313,7 +354,7 @@ function addDiscoveredPlaces(raw){
    const id='osm-'+name+'-'+p.lat.toFixed(4)+'-'+p.lon.toFixed(4);
    if(livePlaces.has(id))continue;
    const key=p.category+'|'+name;
-   if(!placeNameIndex.has(key))placeNameIndex.set(key,[...basePlaces,...state.plan].filter(other=>other.category===p.category&&simplifiedTitle(other.title)===name));
+   if(!placeNameIndex.has(key))placeNameIndex.set(key,[...basePlaces,...state.plan].filter(other=>other.category===p.category&&!other.ferryTransfer&&placeAliases(other).includes(name)));
    const sameName=placeNameIndex.get(key);
    if(sameName.some(other=>straight(p,other)<.8))continue;
    sameName.push(p);
@@ -323,7 +364,7 @@ function addDiscoveredPlaces(raw){
  }
 }
 function sampleRoute(){
- if(!hasRoute())return points;
+ if(!hasRoute())return canDriveTogether(points)?points:[];
  const samples=[...points];
  for(const leg of route.legs){
   const segments=Math.max(1,Math.ceil(leg.km/65));
@@ -338,8 +379,8 @@ function sampleRoute(){
 async function discoverPlaces(){
  const token=++searchToken;
  const area=state.area;
- const candidates=area==='route'?sampleRoute():[region(area)].filter(Boolean);
- if(!candidates.length){searchLoading=false;renderPlaces();return;}
+ const candidates=zoneLabels.has(area)?[]:area==='route'?sampleRoute():[region(area)].filter(Boolean);
+ if(!candidates.length){searchLoading=false;searchStatus='';renderPlaces();return;}
  searchLoading=true;searchStatus='';renderPlaces();
  try{
    const response=await mapPlaceTiles(candidates,area!=='route');
@@ -401,11 +442,13 @@ function getResults(){
  const items=[];
  for(const p of livePlaces.values()){
    if(p.category!==state.category||p.sample&&!state.demo)continue;
-   if(state.area!=='route'&&p.area!==state.area)continue;
+   if(state.area!=='route'&&p.area!==areaState(state.area))continue;
+    if(zoneLabels.has(state.area)&&p.zone!==state.area)continue;
+    if(p.category==='attraction'&&state.onlyFeatured&&!attractionBadge(p))continue;
    const match=matchForDisplay(p);
    if(state.area==='route'){
      if(hasRoute()&&(!match||match.distance>state.limit))continue;
-     if(!hasRoute()&&points.length&&!points.some(a=>a.area===p.area||straight(p,a)<8))continue;
+     if(!hasRoute()&&points.length&&(!canDriveTogether(points)||!points.some(a=>a.area===p.area||straight(p,a)<8)))continue;
    }
    if(p.category==='food'&&(!eligibleRating(p)||(state.foodType!=='all'&&foodKind(p)!==state.foodType)))continue;
    const likelyTime=timeAtPlace(p,match),open=likelyTime?opening(p.hours,likelyTime):null;
@@ -417,7 +460,11 @@ function getResults(){
     const score=weightedScore(b.p)-weightedScore(a.p);
     if(score)return score;
    }
-   if(state.category==='fuel'){
+   if(state.category==='attraction'){
+     const rank=compareAttractions(a.p,b.p);
+     if(rank)return rank;
+    }
+    if(state.category==='fuel'){
      if(Boolean(a.p.dir)!==Boolean(b.p.dir))return a.p.dir?-1:1;
      return (a.match?.progress??Infinity)-(b.match?.progress??Infinity)||a.p.title.localeCompare(b.p.title);
    }
@@ -425,8 +472,27 @@ function getResults(){
  });
  return items;
 }
+function attractionBadge(p){
+ if(p.landmark)return '代表景点';
+ const rating=attractionRatings.get(p.id);
+ return rating?.score>=4.2&&rating.count>=150?'旅客推荐':'';
+}
+function attractionRank(p){
+ const rating=attractionRatings.get(p.id);
+ if(!rating)return 0;
+ const base=(rating.count*rating.score+100*4)/(rating.count+100);
+ return base+(p.landmark ? .20 : attractionBadge(p) ? .10 : 0);
+}
+function compareAttractions(a,b){
+ const ra=attractionRatings.get(a.id),rb=attractionRatings.get(b.id);
+ if(state.attractionSort==='rating')return (rb?.score??0)-(ra?.score??0)||(rb?.count??0)-(ra?.count??0);
+ return attractionRank(b)-attractionRank(a)||(rb?.count??0)-(ra?.count??0);
+}
 function renderArea(){
- $('area-filter').innerHTML='<option value="route">沿途地点</option>'+regions.map(r=>'<option value="'+r.id+'">'+safe(r.title)+' · '+safe(r.en)+'</option>').join('');
+ const options=regions.map(r=>'<option value="'+r.id+'">'+safe(r.title+' · '+stateName(r.id))+'</option>').join('');
+ const districts=state.category==='attraction'?Object.entries(attractionZones).map(([id,zones])=>
+   '<optgroup label="'+safe(region(id).title)+'">'+zones.map(([zone,label])=>'<option value="'+id+':'+zone+'">'+safe(label)+'</option>').join('')+'</optgroup>').join(''):'';
+ $('area-filter').innerHTML='<option value="route">沿途地点</option>'+options+districts;
  $('area-filter').value=state.area;
 }
 function activeButtons(selector,active){
@@ -448,9 +514,13 @@ function renderFilters(){
    html+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="unknown" '+(state.showUnknown?'checked':'')+'>含资料不足</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
  }else if(state.category==='fuel'){
    html+='<label>预计出发后补油<select id="fuel-target">'+[60,100,140,180,220,300,400,500].map(n=>option(n,n+' 公里左右',state.fuelTarget)).join('')+'</select></label>'+distance;
- }else html+=distance+open;
+ }else{
+   html+='<label>景点排序<select id="attraction-sort">'+[['recommended','综合推荐'],['rating','评分从高到低']].map(([value,label])=>option(value,label,state.attractionSort)).join('')+'</select></label>'+
+     '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label>'+(state.area==='route'?distance+open:'');
+ }
  html+='</div>';
  if(state.category==='food')html+='<p class="filter-note">按你在意的项目排序。样本足够时自动估分，未评分显示为「—」。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
 }
@@ -484,7 +554,7 @@ function sourceEstimates(p){
  return scores;
 }
 function googlePlace(p){
- const q=new URLSearchParams({api:'1',query:[p.title,p.googleArea||region(p.area)?.en,'Malaysia'].filter(Boolean).join(', ')});
+ const q=new URLSearchParams({api:'1',query:[p.title,p.googleArea||stateName(p.area),'Malaysia'].filter(Boolean).join(', ')});
  if(p.googlePlaceId)q.set('query_place_id',p.googlePlaceId);
  return p.googleReviewsUrl||'https://www.google.com/maps/search/?'+q;
 }
@@ -508,6 +578,13 @@ function showRatings(p){
    return '<span class="aspect-score" title="'+safe(source)+'">'+name+' <b>'+(value==null?'—':'★ '+Number(value).toFixed(1))+'</b></span>';
  }).join('')+(auto.some(v=>v.score!=null)?'<span class="score-mode">自动估分</span>':'')+'</div>'+ratingDetails(p);
 }
+function showAttractionRating(p){
+ const rating=attractionRatings.get(p.id);
+ const personal=state.ratings[p.id]?.[0];
+ const snapshot=rating?externalLink(rating.source,'★ '+rating.score.toFixed(1)+'/5 · Tripadvisor · '+rating.count.toLocaleString('en-MY')+' 则','attraction-rating'):'<span class="rating-missing">暂无已核实公开评分</span>';
+ return '<div class="rating-row attraction-rating-row">'+snapshot+(rating?'<small>查阅于 '+safe(rating.checkedOn)+'</small>':'')+
+   (personal?'<span class="aspect-score">我的评分 <b>★ '+safe(personal)+'</b></span>':'')+'</div>';
+}
 let limitCards=9;
 function placeCard({p,match,open},pick){
  const linked=state.plan.some(s=>s.id===p.id);
@@ -520,18 +597,20 @@ function placeCard({p,match,open},pick){
  const when=open===true?'预计营业':open===false?'预计未营业':'';
  const hours=p.hoursText||p.hours||'营业时间待核对';
  const sourceUrl=p.source||mapLink(p);
- const badge=pick?.p.id===p.id?'<span class="tag">建议补油</span>':p.sample?'<span class="tag alert">虚构演示</span>':'';
+ const featured=p.category==='attraction'&&attractionBadge(p);
+ const badge=pick?.p.id===p.id?'<span class="tag">建议补油</span>':p.sample?'<span class="tag alert">虚构演示</span>':featured?'<span class="tag attraction-badge">'+featured+'</span>':'';
  let plusDrive='';
  if(detour)plusDrive='<span class="tag '+(detour.min>=25?'alert':'')+'">加开约 '+safe(timeText(detour.min))+' · '+safe(km(detour.km))+'</span>';
  return '<article class="card place">'+placeMedia(p)+'<div class="place-body">'+
    '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+'</div>'+
-   '<div class="place-meta"><span>'+safe(region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
+   '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
    (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+
-   (p.category==='food'?showRatings(p):'')+
+   (p.category==='food'?showRatings(p):p.category==='attraction'?showAttractionRating(p):'')+
    '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span>'+plusDrive+'</div>'+
-   '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked?' disabled':'')+'>'+(linked?'已加入':'＋ 加入行程')+'</button>'+
-   (p.category==='food'&&!p.sample?'<button type="button" class="text-button" data-rate="'+safe(p.id)+'">我的记录</button>':'')+
+   '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'已加入':state.planLocked?'行程已固定':'＋ 加入行程')+'</button>'+
+   (p.category!=='fuel'&&!p.sample?'<button type="button" class="text-button" data-rate="'+safe(p.id)+'">我的记录</button>':'')+
+   (!p.sample?externalLink(googleDirections([p],{fromHere:true}),p.ferryTransfer?'导航到客运码头':'导航到这里'):'')+
    (match&&p.category!=='fuel'&&!p.sample&&!detour?'<button type="button" class="text-button" data-detour="'+safe(p.id)+'">估算绕路</button>':'')+
    (!p.sample?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener">'+(p.osm?'地图资料':'查看来源')+'</a>':'')+
    (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" title="打开 Google Maps 地点详情，可切换照片或评论">Google Maps 照片／评论</a>':'')+
@@ -541,11 +620,11 @@ function renderPlaces(){
  const items=getResults();
  const pick=state.category==='fuel'?fuelPick(items):null;
  const order=pick?[pick,...items.filter(item=>item!==pick)]:items;
- const area=state.area==='route'?'路线附近':region(state.area)?.title||'';
+ const area=state.area==='route'?'路线附近':zoneLabels.get(state.area)||region(state.area)?.title||'';
  const headline=searchLoading?'正在搜索地图地点…':items.length+' 个'+categoryNames[state.category]+'地点';
  $('results-header').innerHTML='<div><strong>'+safe(area+' · '+headline)+'</strong>'+
    (searchStatus?'<span role="status">'+safe(searchStatus)+'</span>':'')+'</div>'+
-   '<button type="button" id="refresh-places"'+(searchLoading?' disabled':'')+'>查找地图地点</button>';
+   (zoneLabels.has(state.area)?'':'<button type="button" id="refresh-places"'+(searchLoading?' disabled':'')+'>查找地图地点</button>');
  $('place-list').innerHTML=items.length?order.slice(0,limitCards).map(item=>placeCard(item,pick)).join('')+
     (items.length>limitCards?'<button type="button" class="add-line" id="more-results">查看更多地点</button>':''):
     '<div class="card empty">'+(searchLoading?'正在查找可加入行程的地点。':'没有符合现有筛选的地点。可以放宽范围、显示资料不足的店，或选另一个州属。')+'</div>';
@@ -575,7 +654,7 @@ async function estimateDetour(button){
    renderPlaces();renderItinerary();
  }catch{notify('暂时无法估算这个地点的道路绕行时间');button.textContent='估算绕路';button.disabled=false;}
 }
-function planEvents(){
+function automaticPlanEvents(){
  const events=[];
  if(!route){
    points.forEach((p,i)=>events.push({type:'city',p,i,minute:i===0?0:null,dwell:Number(state.layovers[i])||0}));
@@ -601,33 +680,130 @@ function planEvents(){
  for(const p of state.plan)if(!included.has(p.id))events.push({type:'place',p,minute:null});
  return events;
 }
+const cityKey=i=>'city:'+i;
+const eventKey=e=>e.type==='city'?cityKey(e.i):e.p.id;
+let manualRoad={key:'',result:null,loading:false};
+let manualRoadTimer;
+function manualCandidates(){
+ return points.length>=2&&canDriveTogether(points)?state.plan.filter(p=>!p.sample&&drivingRegion(p)===drivingRegion(points[0])):[];
+}
+function manualLayout(){
+ const order=state.planOrder;
+ if(!order||!Array.isArray(order.items)||order.route!==routeKey(points)||points.length<2)return null;
+ const byId=new Map(manualCandidates().map(p=>[p.id,{type:'place',p,minute:null}]));
+ points.forEach((p,i)=>byId.set(cityKey(i),{type:'city',p,i,minute:null,dwell:Number(state.layovers[i])||0}));
+ const first=cityKey(0),last=cityKey(points.length-1);
+ const keys=[...new Set(order.items)].filter(key=>key!==first&&key!==last&&byId.has(key));
+ for(const key of byId.keys())if(key!==first&&key!==last&&!keys.includes(key))keys.push(key);
+ return [first,...keys,last].map(key=>byId.get(key));
+}
+function startManualOrder(){
+ if(state.planLocked||!manualCandidates().length)return;
+ const last=cityKey(points.length-1);
+ const items=automaticPlanEvents().map(eventKey).filter(key=>key!==last);
+ state.planOrder={route:routeKey(points),items:[...items,last]};
+ save();renderItinerary();refreshManualTimes();
+}
+function itineraryRouteKey(layout){return routeKey(layout.map(e=>e.p));}
+function planEvents(){
+ const layout=manualLayout();
+ if(!layout)return automaticPlanEvents();
+ const key=itineraryRouteKey(layout);
+ const legs=manualRoad.key===key?manualRoad.result?.legs:null;
+ let elapsed=0;
+ layout.forEach((event,i)=>{
+   if(i===0||legs){event.minute=elapsed;event.manual=true;}
+   elapsed+=(event.type==='city'?event.dwell:Number(event.p.duration)||0)+(legs?.[i]?.duration||0)/60;
+ });
+ const ids=new Set(layout.map(eventKey));
+ return [...layout,...state.plan.filter(p=>!ids.has(p.id)).map(p=>({type:'place',p,minute:null}))];
+}
+function refreshManualTimes(){
+ clearTimeout(manualRoadTimer);
+ const layout=manualLayout();
+ if(!layout||!layout.some(e=>e.type==='place')){manualRoad={key:'',result:null,loading:false};return;}
+ const key=itineraryRouteKey(layout);
+ if(key===manualRoad.key&&manualRoad.result)return;
+ const pending={key,result:null,loading:true};
+ manualRoad=pending;
+ renderItinerary();
+ manualRoadTimer=setTimeout(async()=>{
+   try{
+     const raw=await requestRoad(layout.map(e=>e.p),false);
+     if(raw.legs?.length===layout.length-1)pending.result=raw;
+   }catch{}finally{
+     pending.loading=false;
+     if(manualRoad===pending)renderItinerary();
+   }
+ },250);
+}
+function reorderPlan(id,target,after=false){
+ if(state.planLocked||id===target)return false;
+ const layout=manualLayout();
+ if(!layout?.some(e=>e.type==='place'&&e.p.id===id))return false;
+ const items=layout.map(eventKey);
+ const last=items.at(-1);
+ const reordered=items.filter(key=>key!==id);
+ const index=reordered.indexOf(target);
+ if(index<0)return false;
+ reordered.splice(Math.max(1,Math.min(reordered.length-1,index+Number(after))),0,id);
+ if(reordered.every((key,i)=>key===items[i])||reordered.at(-1)!==last)return false;
+ state.planOrder.items=reordered;
+ save();refreshManualTimes();renderItinerary();
+ return true;
+}
+function movePlan(id,direction){
+ const keys=manualLayout()?.map(eventKey)||[];
+ const index=keys.indexOf(id),target=keys[index+direction];
+ return index>0&&target&&reorderPlan(id,target,direction>0);
+}
 function renderItinerary(){
  $('plan-count').textContent=state.plan.length;
  const events=planEvents();
- const reset=state.plan.length?'<button type="button" class="text-button" id="clear-plan">清空地点</button>':'';
- let html='<div class="itinerary-head"><strong>'+safe(state.date)+' · '+safe(state.time)+' 出发</strong>'+reset+'</div>'+
-   '<p class="fine">已加 '+state.plan.length+' 个地点 · 时间以马来西亚当地时区估算</p>';
+ const layout=manualLayout(),locked=state.planLocked;
+ const reset=state.plan.length&&!locked?'<button type="button" class="text-button" id="clear-plan">清空地点</button>':'';
+ const canSort=Boolean(layout)||manualCandidates().length>0;
+ const sortControl=canSort?'<button type="button" class="text-button" id="plan-order" aria-pressed="'+Boolean(layout)+'"'+(locked?' disabled':'')+'>'+(layout?'恢复按路线排序':'手动排序')+'</button>':'';
+ const lock='<button type="button" class="plan-lock" id="lock-plan" aria-pressed="'+locked+'">'+(locked?'已固定 · 解锁':'固定行程')+'</button>';
+ let html='<div class="itinerary-head"><strong>'+safe(state.date)+' · '+safe(state.time)+' 出发</strong><div class="itinerary-controls">'+lock+sortControl+reset+'</div></div>'+
+   '<p class="fine">已加 '+state.plan.length+' 个地点 · 马来西亚当地时间</p>';
+ if(layout&&!locked)html+='<p class="fine">拖住地点的 ⋮⋮ 移动，或用上移／下移按钮。起点和终点由路线规划设定。</p>';
+ if(locked)html+='<p class="fine">行程编辑已锁定。</p>';
+ if(layout&&manualRoad.key===itineraryRouteKey(layout)&&manualRoad.loading)html+='<p class="fine" role="status">正在按手动顺序重算车程…</p>';
+ else if(layout&&layout.some(e=>e.type==='place')&&(!manualRoad.result||manualRoad.key!==itineraryRouteKey(layout)))html+='<p class="fine">暂时没有手动路线的车程估算，可在 Google Maps 查看。</p>';
+ const routePath=layout?layout.map(e=>e.p):events.filter(e=>e.type==='city'||e.match&&!e.p.sample&&drivingRegion(e.p)===drivingRegion(points[0])).map(e=>e.p);
+ if(routePath.length>2&&routePath.some(p=>state.plan.some(item=>item.id===p.id))){
+   html+='<div class="google-route itinerary-maps">'+routeLinks(routePath,'Google Maps · 打开此行程')+'</div>';
+ }
  if(!events.length){$('itinerary-content').innerHTML=html+'<p class="empty">计算路线后可加入沿路地点。</p>';return;}
  html+='<ol class="itinerary-list">';
  for(const event of events){
    const {p}=event,time=event.minute!=null?at(event.minute):null;
    const open=time?opening(p.hours,time):null;
    const stamp=time?(dateParts.format(time)!==state.date?dateParts.format(time)+' · ':'')+clockParts.format(time):'未排时间';
-   html+='<li class="event '+(event.type==='place'?'stop-event':'')+'"><time>'+safe(stamp)+'</time><h3>'+safe(p.title)+'</h3>';
+   const key=eventKey(event),position=layout?.findIndex(e=>eventKey(e)===key)??-1;
+   const movable=event.type==='place'&&position>0&&!locked;
+   const grip=movable?'<span class="drag-grip" data-drag="'+safe(key)+'" aria-hidden="true" title="拖动地点">⋮⋮</span>':'';
+   html+='<li class="event '+(event.type==='place'?'stop-event':'')+'" data-plan-row="'+safe(key)+'"'+(position>=0?' data-plan-position="'+position+'"':'')+'><time>'+safe(stamp)+'</time><h3>'+grip+safe(p.title)+'</h3>';
    if(event.type==='city'){
      const role=event.i===0?'出发':event.i===points.length-1?'目的地':'抵达';
      html+='<p>'+role+(event.dwell?' · 停留 '+safe(timeText(event.dwell)):'')+'</p>';
      if(event.i<points.length-1){
-       html+='<div class="event-actions"><label class="event-stay">停留<select data-layover="'+event.i+'">'+[[0,'直接出发'],[60,'1 小时'],[180,'3 小时'],[360,'6 小时'],[720,'12 小时'],[1080,'18 小时'],[1440,'24 小时'],[2880,'48 小时']].map(([n,l])=>'<option value="'+n+'" '+(event.dwell===n?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>';
+       html+='<div class="event-actions"><label class="event-stay">停留<select data-layover="'+event.i+'"'+(locked?' disabled':'')+'>'+[[0,'直接出发'],[60,'1 小时'],[180,'3 小时'],[360,'6 小时'],[720,'12 小时'],[1080,'18 小时'],[1440,'24 小时'],[2880,'48 小时']].map(([n,l])=>'<option value="'+n+'" '+(event.dwell===n?'selected':'')+'>'+l+'</option>').join('')+'</select></label></div>';
      }
    }else{
      const description=categoryNames[p.category]+' · 停留约 '+timeText(p.duration||0)+(p.sample?' · 虚构演示':'');
      html+='<p>'+safe(description)+'</p>';
-     if(!time)html+='<p class="warn">当前路线未排入此地点，可更换或调整路线。</p>';
+     if(!time&&position<0)html+='<p class="warn">当前路线未排入此地点，可更换或调整路线。</p>';
      else if(open===false)html+='<p class="warn">预计抵达时未营业，可换一个地点。</p>';
      else if(!p.hours)html+='<p>营业时间待核对</p>';
      if(time&&event.match?.distance>=.65&&!event.detourChecked)html+='<p>车程含粗略绕路估计，可在地点卡计算。</p>';
-     html+='<div class="event-actions"><button type="button" class="text-button" data-swap="'+safe(p.id)+'">更换 / 来不及</button><button type="button" class="text-button" data-delete="'+safe(p.id)+'">移除</button></div>';
+     const controls=movable?[-1,1].map(dir=>{
+       const disabled=dir<0?position<=1:position>=layout.length-2;
+       return '<button type="button" class="text-button" data-move="'+dir+'"'+(disabled?' disabled':'')+' aria-label="'+(dir<0?'上移 ':'下移 ')+safe(p.title)+'">'+(dir<0?'上移':'下移')+'</button>';
+     }).join(''):'';
+     const edits=locked?'':'<button type="button" class="text-button" data-swap="'+safe(p.id)+'">更换 / 来不及</button><button type="button" class="text-button" data-delete="'+safe(p.id)+'">移除</button>';
+     html+='<div class="event-actions">'+controls+edits+(!p.sample?externalLink(googleDirections([p],{fromHere:true}),p.ferryTransfer?'导航到码头':'导航到这里'):'')+'</div>';
    }
    html+='</li>';
  }
@@ -635,16 +811,18 @@ function renderItinerary(){
 }
 function addToPlan(id){
  const p=livePlaces.get(id);
- if(!p||state.plan.some(item=>item.id===id))return;
- state.plan.push({...p});save();renderPlaces();renderItinerary();notify('已加入我的行程');
+ if(!p||state.planLocked||state.plan.some(item=>item.id===id))return;
+ state.plan.push({...p});save();renderPlaces();renderItinerary();refreshManualTimes();notify('已加入我的行程');
 }
 function removePlan(id){
+ if(state.planLocked)return;
  state.plan=state.plan.filter(p=>p.id!==id);
- save();renderPlaces();renderItinerary();notify('已从行程移除');
+ if(Array.isArray(state.planOrder?.items))state.planOrder.items=state.planOrder.items.filter(key=>key!==id);
+ save();renderPlaces();renderItinerary();refreshManualTimes();notify('已从行程移除');
 }
 function showSwap(id){
  const old=state.plan.find(p=>p.id===id);
- if(!old)return;
+ if(!old||state.planLocked)return;
  activeSwap=id;
  const oldEvent=planEvents().find(e=>e.type==='place'&&e.p.id===id);
  const sameIndex=oldEvent?.match?.leg;
@@ -674,47 +852,65 @@ function showRating(id){
  activeRating=id;
  $('rating-place').textContent=p.title;
  const values=state.ratings[id]||[];
- $('rating-fields').innerHTML=metrics.map((name,i)=>'<label class="rating-line">'+name+'<select name="rate'+i+'"><option value="">留空</option>'+[5,4,3,2,1].map(n=>'<option value="'+n+'" '+(values[i]===n?'selected':'')+'>'+n+' 星</option>').join('')+'</select></label>').join('');
+ const attraction=p.category==='attraction';
+ $('rating-heading').textContent=attraction?'记录景点评分':'记录三项评分';
+ $('rating-dialog').querySelector('.review-import').hidden=attraction;
+ $('rating-fields').innerHTML=(attraction?['景点']:metrics).map((name,i)=>'<label class="rating-line">'+name+'<select name="rate'+i+'"><option value="">留空</option>'+[5,4,3,2,1].map(n=>'<option value="'+n+'" '+(values[i]===n?'selected':'')+'>'+n+' 星</option>').join('')+'</select></label>').join('');
  initRatingExtras(id);$('rating-dialog').showModal();
 }
-function renderAll(){renderArea();renderFilters();drawMap();renderRouteSummary();renderPlaces();renderItinerary();}
+let stayLookupPending=false;
+function renderRouteLock(){
+ const calculating=$('route-status').textContent==='正在计算道路距离…';
+ for(const input of $('route-form').querySelectorAll('input,button,select')){
+   if(input.id==='route-submit')input.disabled=state.planLocked||calculating;
+   else if(input.id==='add-stop')input.disabled=state.planLocked||draft.length>=8;
+   else input.disabled=state.planLocked||input.id==='lookup-stay'&&stayLookupPending;
+ }
+ $('reset-route').disabled=state.planLocked;
+}
+function renderAll(){renderArea();renderFilters();drawMap();renderRouteSummary();renderPlaces();renderItinerary();renderRouteLock();}
 $('stops').addEventListener('change',event=>{
- const select=event.target.closest('[data-stop]');if(select)draft[Number(select.dataset.stop)]=select.value;
+ const select=event.target.closest('[data-stop]');
+ if(select){draft[Number(select.dataset.stop)]=select.value;renderGoogleRoute();}
 });
 $('stops').addEventListener('click',event=>{
  const find=event.target.closest('[data-find-stop]');
  if(find){openStopSearch(Number(find.dataset.findStop));return;}
  const button=event.target.closest('[data-remove-stop]');if(!button||draft.length<=2)return;
- draft.splice(Number(button.dataset.removeStop),1);renderStops();
+ draft.splice(Number(button.dataset.removeStop),1);renderStops();renderGoogleRoute();
 });
 $('add-stop').addEventListener('click',()=>{
  if(draft.length>=8)return;
  const prev=city(draft.at(-2));
  const location=cities.find(p=>p.east===prev.east&&!draft.includes(p.id));
- draft.splice(draft.length-1,0,location?.id||prev.id);renderStops();
+ draft.splice(draft.length-1,0,location?.id||prev.id);renderStops();renderGoogleRoute();
  const control=$('stops').querySelector('[data-stop="'+(draft.length-2)+'"]');control?.focus();
 });
 $('route-form').addEventListener('submit',event=>{
  event.preventDefault();
+ if(state.planLocked)return;
  const value=$('stay-coords').value.trim();
  const coords=parseCoordinates(value);
  if(value&&!coords){
    routeMessage('请输入马来西亚境内的纬度、经度，或含坐标的地图链接。',true);
    $('stay-coords').focus();return;
  }
- if(state.ids.join(';')!==draft.join(';')||JSON.stringify(coords)!==JSON.stringify(state.stay&&{lat:state.stay.lat,lon:state.stay.lon}))state.layovers={};
+ if(state.ids.join(';')!==draft.join(';')||JSON.stringify(coords)!==JSON.stringify(state.stay&&{lat:state.stay.lat,lon:state.stay.lon})){
+   state.layovers={};state.planOrder=null;
+ }
  state.ids=draft.slice();state.date=$('trip-date').value;state.time=$('trip-time').value;
  state.stay=coords?{...coords,title:$('stay-name').value.trim()||'我的住宿'}:null;
  save();
  void calculate(true);
 });
 $('reset-route').addEventListener('click',()=>{
- draft=defaultStops.slice();state.ids=draft.slice();state.stay=null;state.layovers={};
+ if(state.planLocked)return;
+ draft=defaultStops.slice();state.ids=draft.slice();state.stay=null;state.layovers={};state.planOrder=null;
  $('stay-coords').value='';$('stay-name').value='';$('stay-details').open=false;
  save();renderStops();setMapScope('all');void calculate(true);
 });
 for(const id of ['trip-date','trip-time'])$(id).addEventListener('change',()=>{
- const date=$('trip-date').value,time=$('trip-time').value;if(!date||!time)return;
+ const date=$('trip-date').value,time=$('trip-time').value;if(!date||!time||state.planLocked)return;
  state.date=date;state.time=time;save();renderPlaces();renderItinerary();
 });
 $('map-pins').addEventListener('click',event=>{
@@ -773,7 +969,9 @@ new ResizeObserver(drawMap).observe($('map-stage'));
 $('area-filter').addEventListener('change',event=>{limitCards=9;selectArea(event.target.value);});
 $('category-tabs').addEventListener('click',event=>{
  const button=event.target.closest('[data-category]');if(!button)return;
- state.category=button.dataset.category;state.onlyOpen=false;limitCards=9;renderFilters();renderPlaces();
+ state.category=button.dataset.category;state.onlyOpen=false;limitCards=9;
+ if(state.category!=='attraction'&&zoneLabels.has(state.area))selectArea(areaState(state.area));
+ else{renderArea();renderFilters();renderPlaces();}
 });
 $('category-filters').addEventListener('change',event=>{
  const control=event.target;
@@ -785,6 +983,8 @@ $('category-filters').addEventListener('change',event=>{
  if(control.id==='demo')state.demo=control.checked;
  if(control.id==='only-open')state.onlyOpen=control.checked;
  if(control.id==='fuel-target')state.fuelTarget=Number(control.value);
+ if(control.id==='attraction-sort')state.attractionSort=control.value;
+ if(control.id==='featured-attractions')state.onlyFeatured=control.checked;
  save();limitCards=9;renderPlaces();renderItinerary();
  const note=$('category-filters').querySelector('.filter-note');
  if(control.id==='demo'&&note)note.textContent='按你在意的项目排序。样本足够时自动估分，未评分显示为「—」。'+(state.demo?' 演示店铺为虚构。':'');
@@ -801,40 +1001,99 @@ $('place-list').addEventListener('click',event=>{
 });
 $('itinerary-content').addEventListener('click',event=>{
  const button=event.target.closest('button');if(!button)return;
+ if(button.id==='lock-plan'){
+   state.planLocked=!state.planLocked;
+   if(state.planLocked){
+     draft=state.ids.slice();
+     $('stay-name').value=state.stay?.title||'';$('stay-coords').value=state.stay?state.stay.lat+', '+state.stay.lon:'';
+     renderStops();
+   }
+   save();renderAll();$('lock-plan').focus();
+   return;
+ }
+ if(state.planLocked)return;
+ if(button.id==='plan-order'){
+   if(manualLayout()){state.planOrder=null;save();refreshManualTimes();renderItinerary();}
+   else startManualOrder();
+   $('plan-order')?.focus();
+ }
+ if(button.dataset.move){
+   const key=button.closest('[data-plan-row]').dataset.planRow;
+   if(movePlan(key,Number(button.dataset.move))){
+     const row=[...$('itinerary-content').querySelectorAll('[data-plan-row]')].find(item=>item.dataset.planRow===key);
+     (row?.querySelector('[data-move="'+button.dataset.move+'"]:enabled')||row?.querySelector('button:enabled'))?.focus();
+   }
+ }
  if(button.dataset.swap)showSwap(button.dataset.swap);
  if(button.dataset.delete)removePlan(button.dataset.delete);
  if(button.id==='clear-plan'&&window.confirm('清空已加入的地点？')){
-   state.plan=[];save();renderPlaces();renderItinerary();
+   state.plan=[];state.planOrder=null;save();refreshManualTimes();renderPlaces();renderItinerary();
  }
 });
 $('itinerary-content').addEventListener('change',event=>{
- const select=event.target.closest('[data-layover]');if(!select)return;
+ const select=event.target.closest('[data-layover]');if(!select||state.planLocked)return;
  state.layovers[select.dataset.layover]=Number(select.value);save();renderPlaces();renderItinerary();
  $('itinerary-content').querySelector('[data-layover="'+select.dataset.layover+'"]')?.focus();
+});
+const itineraryContent=$('itinerary-content');
+let planDrag=null;
+function clearPlanDrag(){
+ planDrag?.target?.classList.remove('plan-drop-before','plan-drop-after');
+ planDrag=null;
+}
+itineraryContent.addEventListener('pointerdown',event=>{
+ const grip=event.target.closest('[data-drag]');
+ if(!grip||state.planLocked||event.button!==0||planDrag)return;
+ itineraryContent.setPointerCapture(event.pointerId);
+ planDrag={id:grip.dataset.drag,pointer:event.pointerId,y:event.clientY,target:null,after:false};
+});
+itineraryContent.addEventListener('pointermove',event=>{
+ if(planDrag?.pointer!==event.pointerId||Math.abs(planDrag.y-event.clientY)<5&&!planDrag.target)return;
+ planDrag.target?.classList.remove('plan-drop-before','plan-drop-after');
+ const row=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-plan-position]');
+ planDrag.target=row&&itineraryContent.contains(row)&&row.dataset.planRow!==planDrag.id?row:null;
+ if(!planDrag.target)return;
+ const rect=row.getBoundingClientRect();
+ planDrag.after=event.clientY>=rect.top+rect.height/2;
+ row.classList.add(planDrag.after?'plan-drop-after':'plan-drop-before');
+});
+itineraryContent.addEventListener('pointerup',event=>{
+ if(planDrag?.pointer!==event.pointerId)return;
+ const {id,target,after}=planDrag;
+ clearPlanDrag();
+ if(target&&reorderPlan(id,target.dataset.planRow,after))notify('行程顺序已更新');
+});
+for(const name of ['pointercancel','lostpointercapture'])itineraryContent.addEventListener(name,event=>{
+ if(planDrag?.pointer===event.pointerId)clearPlanDrag();
 });
 $('top-plan').addEventListener('click',()=>$('itinerary').scrollIntoView({behavior:'smooth',block:'start'}));
 $('close-swap').addEventListener('click',()=>$('swap-dialog').close());
 $('close-rating').addEventListener('click',()=>$('rating-dialog').close());
 $('swap-content').addEventListener('click',event=>{
- const button=event.target.closest('button');if(!button)return;
+ const button=event.target.closest('button');if(!button||state.planLocked)return;
  if(button.id==='skip-stop'){
    removePlan(activeSwap);$('swap-dialog').close();return;
  }
  const place=livePlaces.get(button.dataset.replace);
- if(!place||!activeSwap)return;
+ if(!place||!activeSwap||state.plan.some(p=>p.id===place.id))return;
  const index=state.plan.findIndex(p=>p.id===activeSwap);
  if(index<0)return;
- state.plan[index]={...place};save();$('swap-dialog').close();renderPlaces();renderItinerary();notify('已换成 '+place.title);
+ state.plan[index]={...place};
+ if(Array.isArray(state.planOrder?.items))state.planOrder.items=state.planOrder.items.map(id=>id===activeSwap?place.id:id);
+ save();$('swap-dialog').close();renderPlaces();renderItinerary();refreshManualTimes();notify('已换成 '+place.title);
 });
 $('rating-form').addEventListener('submit',event=>{
  event.preventDefault();if(!activeRating)return;
  const form=new FormData(event.target);
- const values=metrics.map((_,i)=>form.get('rate'+i)?Number(form.get('rate'+i)):null);
+ const attraction=livePlaces.get(activeRating)?.category==='attraction';
+ const values=(attraction?['景点']:metrics).map((_,i)=>form.get('rate'+i)?Number(form.get('rate'+i)):null);
  if(values.some(v=>v!=null))state.ratings[activeRating]=values;
  else delete state.ratings[activeRating];
- if(draftEvidence)state.evidence[activeRating]=draftEvidence;
- else delete state.evidence[activeRating];
- save();$('rating-dialog').close();renderPlaces();notify('三项评分已保存');
+ if(!attraction){
+   if(draftEvidence)state.evidence[activeRating]=draftEvidence;
+   else delete state.evidence[activeRating];
+ }
+ save();$('rating-dialog').close();renderPlaces();notify('评分已保存');
 });
 async function init(){
  $('trip-date').value=state.date;$('trip-time').value=state.time;
@@ -913,8 +1172,8 @@ async function lookupMalaysia(name){
 }
 function knownStopMatches(name){
  const terms=name.toLowerCase().replace(/\bkl\b/g,'kuala lumpur').split(/\s+/).filter(Boolean);
- return cities.filter(p=>{
-   const label=(makePointWords(p)+' '+(p.area==='kl'?'Kuala Lumpur 吉隆坡':'')).toLowerCase();
+ return [...cities,...basePlaces.filter(p=>p.category==='attraction')].filter(p=>{
+   const label=[makePointWords(p),p.mapsName,zoneLabels.get(p.zone),stateName(p.area),region(p.area)?.title].filter(Boolean).join(' ').toLowerCase();
    return terms.every(term=>label.includes(term));
  }).slice(0,6);
 }
@@ -963,18 +1222,20 @@ $('stop-results').addEventListener('click',event=>{
  if(!button||stopIndex===null)return;
  const selected=stopResults[Number(button.dataset.stopResult)];
  if(!selected)return;
- if(selected.id.startsWith('custom-'))customStops.set(selected.id,selected);
+ const stop=cities.includes(selected)?selected:{...selected,id:'custom-'+selected.lat.toFixed(5)+','+selected.lon.toFixed(5),east:region(selected.area)?.east||false};
+ if(!cities.includes(stop))customStops.set(stop.id,stop);
  const index=stopIndex;
- draft[index]=selected.id;$('stop-search').close();renderStops();
+ draft[index]=stop.id;$('stop-search').close();renderStops();renderGoogleRoute();
  $('stops').querySelector('[data-stop="'+index+'"]')?.focus();
  routeMessage('已选择 '+selected.title+'。点击「计算路线」更新。');
 });
+for(const id of ['stay-name','stay-coords'])$(id).addEventListener('input',renderGoogleRoute);
 let stayOptions=[];
 $('lookup-stay').addEventListener('click',async()=>{
  const name=$('stay-name').value.trim();
  if(name.length<3){$('stay-results').textContent='请在「住宿名称」输入至少三个字。';$('stay-name').focus();return;}
  $('stay-results').textContent='正在查找住宿…';
- $('lookup-stay').disabled=true;
+ stayLookupPending=true;$('lookup-stay').disabled=true;
  try{
    stayOptions=await lookupMalaysia(name);
    $('stay-results').innerHTML=stayOptions.length?stayOptions.map((f,i)=>{
@@ -982,7 +1243,7 @@ $('lookup-stay').addEventListener('click',async()=>{
      return '<button class="stay-result" type="button" data-result="'+i+'"><strong>'+safe(p.name||p.street||name)+'</strong><span>'+safe([p.housenumber,p.street,p.city,p.state].filter(Boolean).join(' · '))+'</span></button>';
    }).join(''):'没有找到。可换名称，或直接贴地图坐标。';
  }catch{$('stay-results').textContent='住宿查找暂不可用。仍可直接贴地图坐标。';}
- finally{$('lookup-stay').disabled=false;}
+ finally{stayLookupPending=false;$('lookup-stay').disabled=state.planLocked;}
 });
 $('stay-results').addEventListener('click',event=>{
  const button=event.target.closest('[data-result]');if(!button)return;
@@ -991,7 +1252,7 @@ $('stay-results').addEventListener('click',event=>{
  const [lon,lat]=option.geometry.coordinates;
  $('stay-coords').value=lat.toFixed(6)+', '+lon.toFixed(6);
  $('stay-name').value=option.properties.name||$('stay-name').value;
- $('stay-results').textContent='已选住宿。点击「计算路线」更新。';
+ $('stay-results').textContent='已选住宿。点击「计算路线」更新。';renderGoogleRoute();
 });
 if(typeof globalThis.tripGeoTest==='object')globalThis.tripGeoTest.scoreReviewText=scoreReviewText;
 
