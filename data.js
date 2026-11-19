@@ -112,3 +112,117 @@ basePlaces.push(...[
     "duration": 30
   }
 ]);
+
+basePlaces.push(...[
+  {
+    "id": "hing-kee-kepong-121",
+    "title": "Hing Kee Bakuteh · 121 Jalan Kepong",
+    "area": "kl",
+    "lat": 3.21391,
+    "lon": 101.63741,
+    "foodKind": "restaurant",
+    "tag": "肉骨茶",
+    "googleArea": "121 Jalan Kepong, Taman Usahawan, Kuala Lumpur",
+    "detail": "甲洞 Jalan Kepong 121 号。可点汤版或干肉骨茶。",
+    "source": "https://guide.michelin.com/sg/en/kuala-lumpur-region/kuala-lumpur/restaurant/hing-kee-bakuteh-jalan-kepong",
+    "category": "food",
+    "duration": 45
+  },
+  {
+    "id": "kam-long-city",
+    "title": "Kam Long Ah Zai Curry Fish Head",
+    "area": "joh",
+    "lat": 1.459152,
+    "lon": 103.76487,
+    "foodKind": "restaurant",
+    "tag": "咖喱鱼头",
+    "googleArea": "74 Jalan Wong Ah Fook, Johor Bahru",
+    "detail": "新山 Jalan Wong Ah Fook 74 号的砂锅咖喱鱼头。",
+    "source": "https://eatbook.sg/kam-long-ah-zai-curry-fish-head/",
+    "category": "food",
+    "duration": 45
+  },
+  {
+    "id": "hua-mui-jalan-trus",
+    "title": "Restoran Hua Mui · Jalan Trus",
+    "area": "joh",
+    "lat": 1.45739,
+    "lon": 103.7643,
+    "foodKind": "restaurant",
+    "tag": "海南鸡扒",
+    "googleArea": "131 Jalan Trus, Johor Bahru",
+    "detail": "Jalan Trus 老店，供应海南鸡扒和咖椰烤面包。",
+    "source": "https://huamui.com/contact-us/",
+    "category": "food",
+    "duration": 45
+  },
+  {
+    "id": "hameediyah-campbell",
+    "title": "Hameediyah · Lebuh Campbell",
+    "area": "pen",
+    "lat": 5.41854,
+    "lon": 100.33258,
+    "foodKind": "restaurant",
+    "tag": "扁担饭",
+    "googleArea": "164A Lebuh Campbell, George Town, Penang",
+    "detail": "这张卡对应乔治市 Campbell Street 店。",
+    "source": "https://guide.michelin.com/my/en/pulau-pinang/my-george-town/restaurant/hameediyah-164a-lebuh-campbell",
+    "category": "food",
+    "duration": 45
+  },
+  {
+    "id": "teochew-chendul-keng-kwee",
+    "title": "Penang Road Famous Teochew Chendul",
+    "area": "pen",
+    "lat": 5.41711,
+    "lon": 100.33072,
+    "foodKind": "dessert",
+    "tag": "潮州煎蕊",
+    "googleArea": "Lebuh Keng Kwee, George Town, Penang",
+    "detail": "Lebuh Keng Kwee 的老档，附近也有其他煎蕊档。",
+    "source": "https://chendul.my/locate-us/",
+    "category": "food",
+    "duration": 25
+  },
+  {
+    "id": "osm-mingcourthongkongdimsum-4.5970-101.0863",
+    "title": "Ming Court Hong Kong Dim Sum",
+    "area": "per",
+    "lat": 4.597027844187633,
+    "lon": 101.08628869056702,
+    "foodKind": "restaurant",
+    "tag": "港式点心",
+    "googleArea": "Jalan Leong Sin Nam, Ipoh",
+    "detail": "怡保点心街，早餐时段可看看芋角和蒸点。",
+    "source": "https://www.malaymail.com/amp/news/eat/drink/2020/09/10/headline-rmco-travel-in-ipoh-weekend-brunch-means-dim-sum.-heres-how-to-do/1901858",
+    "category": "food",
+    "duration": 45
+  },
+  {
+    "id": "osm-cendolhajishariff-2.7274-101.9401",
+    "title": "Cendol Haji Shariff",
+    "area": "ns",
+    "lat": 2.7273660784277016,
+    "lon": 101.94005727767944,
+    "foodKind": "dessert",
+    "tag": "煎蕊 · 罗惹",
+    "googleArea": "44 Jalan Yam Tuan, Seremban",
+    "detail": "芙蓉 Jalan Yam Tuan 的煎蕊店，也卖罗惹。",
+    "source": "https://travelwithlens.com/what-to-eat-in-seremban/",
+    "category": "food",
+    "duration": 25
+  },
+  {
+    "id": "kepong-metropolitan-park",
+    "title": "甲洞大都会公园 · Kepong Metropolitan Park",
+    "area": "kl",
+    "lat": 3.22342,
+    "lon": 101.6459,
+    "category": "attraction",
+    "tag": "公园",
+    "googleArea": "Kepong, Kuala Lumpur",
+    "detail": "甲洞的湖畔公园。",
+    "source": "https://poiexplorer.com/asia/malaysia/kuala-lumpur/kuala-lumpur/kepong/recreation/taman-tasik-metropolitan-kepong-w498355681",
+    "duration": 60
+  }
+]);

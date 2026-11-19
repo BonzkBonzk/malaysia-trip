@@ -473,9 +473,12 @@ function sourceEstimates(p){
  if(sourceScoreCache.has(p.id))return sourceScoreCache.get(p.id);
  const entries=publishedEvidence[p.id];
  if(!entries)return metrics.map(()=>({n:0,score:null}));
- const scores=scoreReviewText(entries.map(entry=>entry.summary).join('\n')).map(({positive,negative})=>{
-   const n=positive+negative;
-   return {n,score:n>=2?Math.round((3+2*(positive-negative)/(n+.75))*10)/10:null};
+ const legacy=entries.filter(entry=>!Array.isArray(entry.signals));
+ const scores=scoreReviewText(legacy.map(entry=>entry.summary).join('\n')).map(({positive,negative},i)=>{
+   const signals=entries.map(entry=>entry.signals?.[i]).filter(signal=>signal===-1||signal===0||signal===1);
+   const n=positive+negative+signals.length;
+   const balance=positive-negative+signals.reduce((sum,value)=>sum+value,0);
+   return {n,score:n>=2?Math.round((3+2*balance/(n+.75))*10)/10:null};
  });
  sourceScoreCache.set(p.id,scores);
  return scores;
@@ -487,14 +490,14 @@ function googlePlace(p){
 }
 function placeMedia(p){
  const photo=venuePhotos[p.id];
- if(photo)return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" title="'+safe(photo.author+' · '+photo.license)+'"><img loading="lazy" width="128" height="100" src="'+safe(photo.path)+'" alt="'+safe(p.title)+'"></a>';
+ if(photo)return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" data-photo-fallback="'+safe(googlePlace(p))+'" title="'+safe(photo.author+' · '+photo.license)+'"><img loading="lazy" width="128" height="100" src="'+safe(photo.path)+'" alt="'+safe(p.title)+'"><span class="photo-error">Google Maps 照片</span></a>';
  if(p.sample)return '<div class="place-media placeholder '+p.category+'" aria-hidden="true"><span>'+icons[p.category]+'</span><small>暂无照片</small></div>';
- return '<a class="place-media placeholder '+p.category+'" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的 Google Maps 地点详情"><span aria-hidden="true">'+icons[p.category]+'</span><small>查看照片</small></a>';
+ return '<a class="place-media placeholder '+p.category+'" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的 Google Maps 地点详情"><span aria-hidden="true">'+icons[p.category]+'</span><small>Google Maps 照片</small></a>';
 }
 function ratingDetails(p){
  const entries=publishedEvidence[p.id]||[], ratings=sourceEstimates(p);
  if(!entries.length)return '';
- return '<details class="rating-evidence"><summary>自动评分依据 · '+entries.length+' 条公开来源</summary><p>'+metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ')+'</p><ul>'+entries.map(entry=>'<li><a href="'+safe(entry.url)+'" target="_blank" rel="noopener">'+safe(entry.label)+'</a> · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
+ return '<details class="rating-evidence"><summary>自动评分依据 · '+entries.length+' 条公开来源</summary><p>'+metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ')+'</p><p>卫生分来自食客当时对用餐环境的观察。</p><ul>'+entries.map(entry=>'<li><a href="'+safe(entry.url)+'" target="_blank" rel="noopener">'+safe(entry.label)+'</a> · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
 }
 
 function showRatings(p){
@@ -991,5 +994,14 @@ $('stay-results').addEventListener('click',event=>{
  $('stay-results').textContent='已选住宿。点击「计算路线」更新。';
 });
 if(typeof globalThis.tripGeoTest==='object')globalThis.tripGeoTest.scoreReviewText=scoreReviewText;
+
+document.addEventListener('error',event=>{
+ const image=event.target;
+ const link=image?.closest?.('[data-photo-fallback]');
+ if(image?.tagName!=='IMG'||!link)return;
+ link.href=link.dataset.photoFallback;
+ link.title='在 Google Maps 查看照片';
+ link.classList.add('photo-unavailable');
+},true);
 
 void init();
