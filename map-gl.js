@@ -103,6 +103,10 @@
  };
  window.zoom=step=>ready&&gl.zoomTo(gl.getZoom()+Math.log2(step),{duration:250});
  window.zoomAt=(x,y,step)=>window.zoom(step);
+ // Keep the map markers in step with the list (category tab, filters, more results).
+ const listRender=window.renderPlaces;
+ let markerTimer=0;
+ window.renderPlaces=function(){listRender();clearTimeout(markerTimer);markerTimer=setTimeout(()=>window.drawMap(),60);};
  new ResizeObserver(()=>gl.resize()).observe(stage);
  window.tripGL=gl;
 })();

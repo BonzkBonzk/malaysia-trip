@@ -519,9 +519,10 @@ function pickExtras(p){
  if(p.recommend===true&&p.caveat)html+='<span class="tag caveat" title="为什么还推荐">'+safe(p.caveat)+'</span>';
  if(isFamous(p))html+='<span class="tag famous">名店，但要注意：'+safe(p.notRecommended)+'</span>';
  else if(p.recommend===false&&p.notRecommended)html+='<span class="tag alert">不推荐：'+safe(p.notRecommended)+'</span>';
+ const why=p.why?'<p class="why"><b>为什么去</b> '+safe(p.why)+'</p>':'';
  const list=p.mustEat||p.mustDo;
  const must=list&&list.length?'<p class="must-list"><b>'+(p.mustEat?'必吃':'必玩')+'</b> '+list.map(x=>safe(x.name)+(x.price?' <span class="must-price">'+safe(x.price)+'</span>':'')).join(' · ')+(p.priceNote?' <small>（'+safe(p.priceNote)+'）</small>':'')+'</p>':'';
- return (html?'<div class="pick-tags">'+html+'</div>':'')+must;
+ return (html?'<div class="pick-tags">'+html+'</div>':'')+why+must;
 }
 function attractionBadge(p){
  if(p.landmark)return '代表景点';
@@ -652,15 +653,20 @@ function renderPhotoCredits(){
    '<li>'+externalLink(photo.source,photo.label)+' · '+safe(photo.author)+(photo.alternateAuthor?'／'+safe(photo.alternateAuthor):'')+
    (photo.licenseUrl?' · '+externalLink(photo.licenseUrl,photo.license):'')+'</li>').join('');
 }
+const openEvidence=new Set();
 function ratingDetails(p){
  const id=assessedVenueId(p), entries=publishedEvidence[id]||[];
  if(!entries.length)return '';
  const ratings=sourceEstimates(p);
  const summary=reviewAssessmentNotes[id];
  const evidenceCount=metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ');
- return '<details class="rating-evidence"><summary>看评价</summary>'+(summary?'<p class="verdict">'+safe(summary)+'</p>':'')+
+ return '<details class="rating-evidence" data-evidence="'+safe(p.id)+'"'+(openEvidence.has(p.id)?' open':'')+'><summary>看评价</summary>'+(summary?'<p class="verdict">'+safe(summary)+'</p>':'')+
    '<p class="fine">'+safe(evidenceCount)+' · 核对于 '+reviewAssessmentDate+'</p>'+
-   '<ul>'+entries.map(entry=>'<li>'+externalLink(entry.url,entry.label)+' · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
+   '<ul class="evidence-list">'+entries.map(entry=>{
+     const sig=(entry.signals||[]).filter(v=>v===1||v===-1),pos=sig.filter(v=>v===1).length,neg=sig.length-pos;
+     const tone=neg&&!pos?'neg':pos&&!neg?'pos':neg?'mixed':'';
+     return '<li class="'+tone+'"><span class="ev-dot" aria-hidden="true"></span><span>'+safe(entry.summary)+' <small>'+externalLink(entry.url,entry.label)+'</small></span></li>';
+   }).join('')+'</ul></details>';
 }
 
 function showRatings(p){
@@ -701,12 +707,12 @@ function placeCard({p,match,open},pick){
  if(detour)plusDrive=detour.min>=1?'<span class="tag '+(detour.min>=25?'alert':'')+'">绕路 +'+safe(timeText(detour.min))+'</span>':'<span class="tag soft">顺路</span>';
  else if(match&&p.category!=='fuel'&&!p.sample&&detourQueue.has(p.id))plusDrive='<span class="tag soft">绕路计算中…</span>';
  return '<article class="card place'+(photo?' with-photo':'')+'">'+placeMedia(p,photo)+'<div class="place-body">'+
-   '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+'</div>'+
+   '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+(plusDrive?'<span class="detour-corner">'+plusDrive+'</span>':'')+'</div>'+
    '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
    (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+pickExtras(p)+
    (p.category==='food'?showRatings(p):p.category==='attraction'?showAttractionRating(p):'')+
-   '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span>'+plusDrive+'</div>'+
+   '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span></div>'+
    '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'✓ 已加入':state.planLocked?'已固定':'＋ 加入')+'</button>'+
    (p.category!=='fuel'&&!p.sample?'<button type="button" class="icon-btn" data-rate="'+safe(p.id)+'" title="我的记录" aria-label="我的记录">✎</button>':'')+
    (!p.sample?'<a class="icon-btn" href="'+safe(googleDirections([p],{fromHere:true}))+'" target="_blank" rel="noopener" title="'+(p.ferryTransfer?'导航到客运码头':'导航')+'" aria-label="导航">🧭</a>':'')+
@@ -1216,6 +1222,14 @@ $('results-header').addEventListener('click',event=>{
  if(event.target.id==='refresh-places')void discoverPlaces();
 });
 $('place-list').addEventListener('click',event=>{
+ const summary=event.target.closest('.rating-evidence>summary');
+ if(summary){
+   event.preventDefault();
+   const box=summary.parentElement,id=box.dataset.evidence;
+   box.open=!box.open;
+   if(box.open)openEvidence.add(id);else openEvidence.delete(id);
+   return;
+ }
  const button=event.target.closest('button');if(!button)return;
  if(button.dataset.add)addToPlan(button.dataset.add);
  if(button.dataset.rate)showRating(button.dataset.rate);

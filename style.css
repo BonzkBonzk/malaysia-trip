@@ -141,3 +141,18 @@ body.live-on{padding-bottom:84px}
 .more-filters summary{cursor:pointer;font-size:.82rem;color:#2f6f62;font-weight:600}
 .tag-filter{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
 .tag-filter button{flex:none}
+
+/* Detour tag in the card's top-right corner */
+.place-title{display:flex;align-items:flex-start;gap:8px}
+.place-title h3{flex:1}
+.detour-corner{margin-left:auto;flex:none}
+.detour-corner .tag{white-space:nowrap}
+/* Evidence: green = positive, red = negative, amber = mixed */
+.evidence-list{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:5px}
+.evidence-list li{display:flex;gap:7px;align-items:flex-start;padding:5px 8px;border-radius:8px;background:#f6f8f7;font-size:.86rem;line-height:1.45}
+.evidence-list li small{color:#7a8a84}
+.ev-dot{flex:none;width:8px;height:8px;margin-top:6px;border-radius:50%;background:#a9b6b1}
+.evidence-list li.pos{background:#eef7f1}.evidence-list li.pos .ev-dot{background:#2e9b5f}
+.evidence-list li.neg{background:#fdf0ef}.evidence-list li.neg .ev-dot{background:#d0453a}
+.evidence-list li.mixed{background:#fdf6e8}.evidence-list li.mixed .ev-dot{background:#d99a26}
+.why{margin:6px 0 2px;font-size:.92em;line-height:1.55}.why b{color:#2f5aa8;margin-right:4px}
