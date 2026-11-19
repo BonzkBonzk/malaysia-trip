@@ -26,7 +26,7 @@
 </div><a class="hero-caption" href="https://commons.wikimedia.org/wiki/File:River_of_Melaka.jpg" target="_blank" rel="noopener" title="Leonardo0511 · CC BY-SA 4.0"><span>◈</span> 马六甲河 · Melaka</a></section>
 
 <section id="planner" class="section" aria-labelledby="planner-title">
-<div class="section-heading"><div><p class="kicker">PLAN YOUR ROUTE</p><h2 id="planner-title">先选你想去的地方</h2></div><span class="tag muted">自驾预计时间 · 无实时路况</span></div>
+<div class="section-heading"><div><p class="kicker">PLAN YOUR ROUTE</p><h2 id="planner-title">先选你想去的地方</h2></div><span class="tag muted">站内规划 · Google Maps 实时导航</span></div>
 <div class="route-layout">
 <div class="card route-panel"><div class="panel-heading"><h3>自驾路线</h3><button type="button" class="text-button" id="reset-route">恢复示例</button></div>
 <form id="route-form"><div id="stops"></div>
@@ -37,7 +37,7 @@
 <button type="button" class="text-button" id="lookup-stay">按住宿名称查找</button><div id="stay-results" aria-live="polite"></div><small>搜索住宿时，请填公开名称或街道。私人住宿可贴地图坐标。选好后点「计算路线」。</small></div></details>
 <div class="trip-inputs"><label>出发日期<input id="trip-date" type="date" required></label><label>出发时间<input id="trip-time" type="time" required value="08:00"></label></div>
 <button id="route-submit" type="submit" class="primary wide">计算路线</button>
-</form><p id="route-status" class="status" role="status" aria-live="polite"></p></div>
+</form><p id="route-status" class="status" role="status" aria-live="polite"></p><div id="google-route" class="google-route" aria-label="Google Maps 实时导航"></div></div>
 <div class="card map-panel">
 <div class="map-head"><div><h3>马来西亚地图</h3><p id="map-caption">点击城市查看当地吃喝玩乐</p></div><div class="seg map-regions" aria-label="地图范围"><button type="button" class="on" data-region="all">全马</button><button type="button" data-region="west">西马</button><button type="button" data-region="east">东马</button></div></div>
 <div id="map-stage" class="map-stage"><canvas id="map" aria-label="包含西马和东马的互动地图"></canvas><div id="map-pins"></div><div class="map-zoom"><button id="zoom-in" aria-label="放大地图" type="button">＋</button><button id="zoom-out" aria-label="缩小地图" type="button">−</button><button id="zoom-reset" type="button" aria-label="重置地图">⌂</button></div>
@@ -67,4 +67,15 @@
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <dialog id="swap-dialog"><div class="dialog-head"><h2>换一个停留点</h2><button type="button" class="icon-button" id="close-swap" aria-label="关闭">✕</button></div><div id="swap-content"></div></dialog>
 <dialog id="rating-dialog"><div class="dialog-head"><h2>记录三项评分</h2><button type="button" class="icon-button" id="close-rating" aria-label="关闭">✕</button></div><form id="rating-form"><p id="rating-place"></p><div id="rating-fields"></div><p class="fine">星级只保存在当前浏览器。没体验过的项目可以留空。</p><details class="review-import"><summary>从已有评论估算各项星级</summary><label>贴入可以使用的评论，每行一条<textarea id="review-text" rows="4" maxlength="10000" placeholder="每行一条评论"></textarea></label><p class="fine">按明确的正负面措辞估算，每项至少两条。保存星级和样本计数。</p><button type="button" class="text-button" id="analyze-review">分析评论</button> <button type="button" class="text-button" id="clear-reviews">清除评论估分</button><p id="review-result" class="fine" aria-live="polite"></p></details><button class="primary wide" type="submit">保存评分</button></form></dialog>
+<dialog id="stop-search" aria-labelledby="stop-search-title">
+  <div class="dialog-head">
+    <h2 id="stop-search-title">查找路线地点</h2>
+    <button type="button" class="icon-button" id="close-stop-search" aria-label="关闭">✕</button>
+  </div>
+  <form id="stop-search-form" class="stop-search-form">
+    <label for="stop-query">城市、社区、地标或坐标</label>
+    <div class="stop-search-controls"><input id="stop-query" placeholder="例如 Kepong、Desa ParkCity、Batu Caves" maxlength="150" required><button type="submit" class="primary">查找</button></div>
+  </form>
+  <div id="stop-results" class="stop-results" aria-live="polite"></div>
+</dialog>
 </body></html>

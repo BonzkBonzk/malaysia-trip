@@ -19,6 +19,8 @@ const regions = [
 
 const cities = [
 ['kuala-lumpur','吉隆坡','Kuala Lumpur','kl',3.1390,101.6869],
+['kepong','甲洞','Kepong','kl',3.20548,101.63842],
+['desa-parkcity','Desa ParkCity','Desa ParkCity','kl',3.1877542,101.6269999],
 ['petaling-jaya','八打灵再也','Petaling Jaya','sel',3.1073,101.6067],
 ['subang-jaya','梳邦再也','Subang Jaya','sel',3.0567,101.5851],
 ['putrajaya','布城','Putrajaya','put',2.9264,101.6964],

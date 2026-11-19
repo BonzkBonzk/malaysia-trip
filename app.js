@@ -3,13 +3,16 @@ const safe=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt
 const categoryNames={food:'美食',attraction:'景点',fuel:'油站'};
 const icons={food:'♨',attraction:'◇',fuel:'⛽'};
 const metrics=['食物','卫生','服务'];
-const city=id=>cities.find(p=>p.id===id);
+const city=id=>cities.find(p=>p.id===id)||customStops.get(id);
 const region=id=>regions.find(p=>p.id===id);
 const storageKey='malaysia-trip.v1';
 function loadSaved(){
  try{return JSON.parse(localStorage.getItem(storageKey)||'{}')||{};}catch{return {};}
 }
 const saved=loadSaved();
+const customStops=new Map((Array.isArray(saved.customStops)?saved.customStops:[])
+ .filter(p=>typeof p?.id==='string'&&p.id.startsWith('custom-')&&typeof p.title==='string'&&Number.isFinite(p.lat)&&Number.isFinite(p.lon))
+ .map(p=>[p.id,p]));
 const state={
  ids:Array.isArray(saved.ids)&&saved.ids.length>=2&&saved.ids.every(city)?saved.ids:defaultStops.slice(),
  stay:saved.stay||null,date:saved.date||dateParts.format(new Date()),time:saved.time||'08:00',
@@ -23,7 +26,7 @@ const state={
 function save(){
  try{
   localStorage.setItem(storageKey,JSON.stringify({
-   ids:state.ids,stay:state.stay,date:state.date,time:state.time,foodType:state.foodType,plan:state.plan,ratings:state.ratings,evidence:state.evidence,
+   ids:state.ids,customStops:state.ids.map(id=>customStops.get(id)).filter(Boolean),stay:state.stay,date:state.date,time:state.time,foodType:state.foodType,plan:state.plan,ratings:state.ratings,evidence:state.evidence,
    layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,
    demo:state.demo,limit:state.limit,fuelTarget:state.fuelTarget
   }));
@@ -38,7 +41,7 @@ let route=null,points=[],draft=state.ids.slice(),selectedPin='',mapBoundaries=[]
 let routeTime=new Map(),detours=new Map(),placeMatches=new Map(),activeRating=null,activeSwap=null;
 const formatDeparture=()=>localDate(state.date,state.time);
 const at=(m)=>new Date(formatDeparture().getTime()+m*60000);
-const makePointWords=(p)=>p.title+' · '+p.en;
+const makePointWords=p=>[p.title,p.en].filter((label,i,list)=>label&&list.indexOf(label)===i).join(' · ');
 function notify(text){
  $('toast').textContent=text;
  clearTimeout(notify.timer);
@@ -55,20 +58,29 @@ function routeKey(waypoints){return waypoints.map(p=>p.lat.toFixed(5)+','+p.lon.
 function renderStops(){
  $('stops').innerHTML=draft.map((id,i)=>{
    const label=i===0?'起点':i===draft.length-1?'终点':'途经地';
-   let options='';
-   for(const east of [false,true]){
-     options+='<optgroup label="'+(east?'东马':'西马')+'">'+cities.filter(p=>p.east===east).map(p=>
-        '<option value="'+safe(p.id)+'" '+(p.id===id?'selected':'')+'>'+safe(makePointWords(p))+'</option>').join('')+'</optgroup>';
-   }
-   return '<div class="stop-row"><span class="stop-num">'+(i+1)+'</span><label><span>'+label+'</span>'+
+   const groups=[
+     ['吉隆坡及社区',cities.filter(p=>p.area==='kl')],
+     ['雪兰莪',cities.filter(p=>p.area==='sel')],
+     ['西马其他城市',cities.filter(p=>!p.east&&!['kl','sel'].includes(p.area))],
+     ['东马城市',cities.filter(p=>p.east)]
+   ];
+   const custom=customStops.get(id);
+   if(custom)groups.push(['已查找地点',[custom]]);
+   const options=groups.map(([title,items])=>'<optgroup label="'+title+'">'+items.map(p=>
+     '<option value="'+safe(p.id)+'" '+(p.id===id?'selected':'')+'>'+safe(makePointWords(p))+'</option>').join('')+'</optgroup>').join('');
+   return '<div class="stop-row"><span class="stop-num">'+(i+1)+'</span><div class="stop-field"><label><span>'+label+'</span>'+
       '<select data-stop="'+i+'" aria-label="'+label+' '+(i+1)+'">'+options+'</select></label>'+
+      '<button type="button" class="text-button find-stop" data-find-stop="'+i+'" aria-label="查找'+label+' '+(i+1)+'">查找地点</button></div>'+
       (draft.length>2?'<button type="button" class="remove-stop" data-remove-stop="'+i+'" aria-label="移除'+label+'">✕</button>':'<span aria-hidden="true"></span>')+'</div>';
  }).join('');
  $('add-stop').disabled=draft.length>=8;
 }
 function waypointsFromState(){
  const places=state.ids.map(city);
- if(state.stay) places[0]={...places[0],...state.stay,id:'lodging',en:'住宿',east:state.stay.lon>=109};
+ if(state.stay) {
+   const area=findArea(state.stay)||places[0].area;
+   places[0]={...places[0],...state.stay,id:'lodging',area,en:'住宿',east:state.stay.lon>=109};
+ }
  return places;
 }
 async function calculate(userAction=false){
@@ -245,13 +257,37 @@ function mapHit(x,y){
  const feature=mapBoundaries.find(([name,polygons])=>region(featureNames[name])?.east===(frame.key==='east')&&polygons.some(poly=>inRing(p,poly[0])&&!poly.slice(1).some(hole=>inRing(p,hole))));
  return feature?featureNames[feature[0]]:null;
 }
+function googleDirections(stops){
+ const coords=p=>p.lat.toFixed(6)+','+p.lon.toFixed(6);
+ const params=new URLSearchParams({api:'1',origin:coords(stops[0]),destination:coords(stops.at(-1)),travelmode:'driving'});
+ if(stops.length>2)params.set('waypoints',stops.slice(1,-1).map(coords).join('|'));
+ return 'https://www.google.com/maps/dir/?'+params;
+}
+function googleRouteSegments(stops){
+ const segments=[];
+ for(let i=0;i<stops.length-1;i+=4)segments.push(stops.slice(i,i+5));
+ return segments;
+}
+function renderGoogleRoute(){
+ const navigation=$('google-route');
+ if(points.length<2||points.some(p=>p.east!==points[0].east)||points.slice(1).some((p,i)=>straight(p,points[i])<.03)){
+   navigation.innerHTML='';
+   return;
+ }
+ const segments=googleRouteSegments(points);
+ navigation.innerHTML=segments.map(stops=>{
+   const label=segments.length===1?'Google Maps 实时路况及导航':stops[0].title+' → '+stops.at(-1).title;
+   return '<a href="'+safe(googleDirections(stops))+'" target="_blank" rel="noopener">'+safe(label)+'</a>';
+ }).join('')+(segments.length>1?'<p class="fine">途经地较多，按以上分段打开 Google Maps。</p>':'');
+}
 function renderRouteSummary(){
+ renderGoogleRoute();
  if(!route){
   $('route-summary').innerHTML='<span>公路距离和车程会在计算后显示。</span>';
   return;
  }
  $('route-summary').innerHTML='<span><span class="route-icon">◇</span> <b>'+safe(km(route.km))+'</b> 全程</span>'+
- '<span><span class="route-icon">◷</span> <b>'+safe(timeText(route.min))+'</b> 驾驶</span>'+
+ '<span><span class="route-icon">◷</span> <b>'+safe(timeText(route.min))+'</b> 规划估时</span>'+
  route.legs.map(leg=>'<span>'+safe(leg.from.title)+' → '+safe(leg.to.title)+' <b>'+safe(km(leg.km))+'</b></span>').join('');
 }
 function simplifiedTitle(name){return name.normalize('NFKD').toLowerCase().replace(/\s*\((?:store|restaurant)\)$/,'').replace(/[^a-z0-9\u3400-\u9fff]/g,'');}
@@ -452,7 +488,8 @@ function googlePlace(p){
 function placeMedia(p){
  const photo=venuePhotos[p.id];
  if(photo)return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" title="'+safe(photo.author+' · '+photo.license)+'"><img loading="lazy" width="128" height="100" src="'+safe(photo.path)+'" alt="'+safe(p.title)+'"></a>';
- return '<div class="place-media placeholder '+p.category+'" aria-hidden="true"><span>'+icons[p.category]+'</span><small>暂无照片</small></div>';
+ if(p.sample)return '<div class="place-media placeholder '+p.category+'" aria-hidden="true"><span>'+icons[p.category]+'</span><small>暂无照片</small></div>';
+ return '<a class="place-media placeholder '+p.category+'" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的 Google Maps 地点详情"><span aria-hidden="true">'+icons[p.category]+'</span><small>查看照片</small></a>';
 }
 function ratingDetails(p){
  const entries=publishedEvidence[p.id]||[], ratings=sourceEstimates(p);
@@ -494,7 +531,7 @@ function placeCard({p,match,open},pick){
    (p.category==='food'&&!p.sample?'<button type="button" class="text-button" data-rate="'+safe(p.id)+'">我的记录</button>':'')+
    (match&&p.category!=='fuel'&&!p.sample&&!detour?'<button type="button" class="text-button" data-detour="'+safe(p.id)+'">估算绕路</button>':'')+
    (!p.sample?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener">'+(p.osm?'地图资料':'查看来源')+'</a>':'')+
-   (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" title="打开地点，进入 Google Maps 评论">Google Maps 评论</a>':'')+
+   (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" title="打开 Google Maps 地点详情，可切换照片或评论">Google Maps 照片／评论</a>':'')+
    (p.tickets?'<a href="'+safe(p.tickets)+'" target="_blank" rel="noopener">购票</a>':'')+'</div></div></article>';
 }
 function renderPlaces(){
@@ -642,6 +679,8 @@ $('stops').addEventListener('change',event=>{
  const select=event.target.closest('[data-stop]');if(select)draft[Number(select.dataset.stop)]=select.value;
 });
 $('stops').addEventListener('click',event=>{
+ const find=event.target.closest('[data-find-stop]');
+ if(find){openStopSearch(Number(find.dataset.findStop));return;}
  const button=event.target.closest('[data-remove-stop]');if(!button||draft.length<=2)return;
  draft.splice(Number(button.dataset.removeStop),1);renderStops();
 });
@@ -857,7 +896,76 @@ $('analyze-review').addEventListener('click',()=>{
 $('clear-reviews').addEventListener('click',()=>{
  draftEvidence=null;$('review-text').value='';$('review-result').textContent='已清除，按保存后生效。';
 });
-const searchStayCache=new Map();
+const malaysiaPlaceCache=new Map();
+async function lookupMalaysia(name){
+ const query=name.replace(/\bkl\b/gi,'Kuala Lumpur').trim();
+ const key=query.toLowerCase();
+ if(!malaysiaPlaceCache.has(key)){
+   const params=new URLSearchParams({q:query,bbox:'99.25,0.8,120,7.8',limit:'6'});
+   malaysiaPlaceCache.set(key,timedJSON('https://photon.komoot.io/api/?'+params,8500)
+     .then(json=>(json.features||[]).filter(f=>f.properties?.countrycode?.toUpperCase()==='MY'&&f.geometry?.type==='Point'))
+     .catch(error=>{malaysiaPlaceCache.delete(key);throw error;}));
+ }
+ return malaysiaPlaceCache.get(key);
+}
+function knownStopMatches(name){
+ const terms=name.toLowerCase().replace(/\bkl\b/g,'kuala lumpur').split(/\s+/).filter(Boolean);
+ return cities.filter(p=>{
+   const label=(makePointWords(p)+' '+(p.area==='kl'?'Kuala Lumpur 吉隆坡':'')).toLowerCase();
+   return terms.every(term=>label.includes(term));
+ }).slice(0,6);
+}
+let stopIndex=null,stopResults=[],stopSearchToken=0;
+function openStopSearch(index){
+ stopIndex=index;stopResults=[];++stopSearchToken;
+ $('stop-query').value='';$('stop-results').innerHTML='';
+ $('stop-search').showModal();$('stop-query').focus();
+}
+function makeCustomStop(lat,lon,title,en=''){
+ const area=findArea({lat,lon});
+ if(!area)return null;
+ return {id:'custom-'+lat.toFixed(5)+','+lon.toFixed(5),title,en,lat,lon,area,east:region(area).east};
+}
+function renderStopResults(items){
+ stopResults=items;
+ $('stop-results').innerHTML=items.length?items.map((p,i)=>
+   '<button type="button" class="stay-result" data-stop-result="'+i+'"><strong>'+safe(makePointWords(p))+'</strong><span>'+safe(region(p.area)?.title||'')+'</span></button>').join(''):
+   '<p class="fine">没有找到地点。可加上城市名称，或输入坐标。</p>';
+}
+$('close-stop-search').addEventListener('click',()=>$('stop-search').close());
+$('stop-search').addEventListener('close',()=>{++stopSearchToken;stopIndex=null;});
+$('stop-search-form').addEventListener('submit',async event=>{
+ event.preventDefault();
+ const name=$('stop-query').value.trim();
+ if(!name)return;
+ const token=++stopSearchToken;
+ const local=knownStopMatches(name),coords=parseCoordinates(name);
+ if(local.length||coords){
+   renderStopResults(coords?[makeCustomStop(coords.lat,coords.lon,'地图坐标',coords.lat+', '+coords.lon)].filter(Boolean):local);
+   return;
+ }
+ $('stop-results').textContent='正在查找地点…';
+ try{
+   const features=await lookupMalaysia(name);
+   if(token!==stopSearchToken)return;
+   renderStopResults(features.map(f=>{
+     const [lon,lat]=f.geometry.coordinates,p=f.properties;
+     if(!Number.isFinite(lon)||!Number.isFinite(lat))return null;
+     return makeCustomStop(lat,lon,p.name||p.street||name,[p.district,p.city].filter((part,i,parts)=>part&&part!==(p.name||p.street)&&parts.indexOf(part)===i).join(', '));
+   }).filter(Boolean));
+ }catch{if(token===stopSearchToken)$('stop-results').textContent='暂时无法查找地点。可选已有城市，或直接输入坐标。';}
+});
+$('stop-results').addEventListener('click',event=>{
+ const button=event.target.closest('[data-stop-result]');
+ if(!button||stopIndex===null)return;
+ const selected=stopResults[Number(button.dataset.stopResult)];
+ if(!selected)return;
+ if(selected.id.startsWith('custom-'))customStops.set(selected.id,selected);
+ const index=stopIndex;
+ draft[index]=selected.id;$('stop-search').close();renderStops();
+ $('stops').querySelector('[data-stop="'+index+'"]')?.focus();
+ routeMessage('已选择 '+selected.title+'。点击「计算路线」更新。');
+});
 let stayOptions=[];
 $('lookup-stay').addEventListener('click',async()=>{
  const name=$('stay-name').value.trim();
@@ -865,12 +973,7 @@ $('lookup-stay').addEventListener('click',async()=>{
  $('stay-results').textContent='正在查找住宿…';
  $('lookup-stay').disabled=true;
  try{
-   if(!searchStayCache.has(name)){
-     const q=new URLSearchParams({q:name,bbox:'99.25,0.8,120,7.8',limit:'6'});
-     const json=await timedJSON('https://photon.komoot.io/api/?'+q,8500);
-     searchStayCache.set(name,(json.features||[]).filter(f=>f.properties.countrycode==='MY'&&f.geometry.type==='Point'));
-   }
-   stayOptions=searchStayCache.get(name);
+   stayOptions=await lookupMalaysia(name);
    $('stay-results').innerHTML=stayOptions.length?stayOptions.map((f,i)=>{
      const p=f.properties;
      return '<button class="stay-result" type="button" data-result="'+i+'"><strong>'+safe(p.name||p.street||name)+'</strong><span>'+safe([p.housenumber,p.street,p.city,p.state].filter(Boolean).join(' · '))+'</span></button>';

@@ -64,7 +64,7 @@ const publishedEvidence = {
     {
       "label": "Where2Go · 2026",
       "url": "https://where2go.com.my/kuala-lumpur/restaurants/limapulo-baba-can-cook/",
-      "summary": "指南推荐这家娘惹菜，认为好吃。"
+      "summary": "指南认为这家娘惹菜好吃。"
     }
   ],
   "klebang": [
