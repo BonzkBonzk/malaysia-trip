@@ -20,7 +20,7 @@ const state={
  plan:Array.isArray(saved.plan)?saved.plan.filter(p=>p?.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)):[],
  ratings:saved.ratings||{},evidence:saved.evidence||{},layovers:saved.layovers||{},category:'food',area:'route',scope:'all',
  preset:saved.preset in {balanced:1,food:1,service:1}?saved.preset:'balanced',minimum:Array.isArray(saved.minimum)?saved.minimum:[0,0,0],
- showUnknown:saved.showUnknown??true,showAll:saved.showAll??false,demo:saved.demo??false,limit:saved.limit??15,
+ showUnknown:saved.showUnknown??true,showAll:saved.showAll??false,pickTier:saved.pickTier==='top'?'top':'all',tagFilter:Array.isArray(saved.tagFilter)?saved.tagFilter:[],demo:saved.demo??false,limit:saved.limit??15,
  fuelTarget:saved.fuelTarget??180,onlyOpen:false,
  planLocked:saved.planLocked===true,planOrder:saved.planOrder||null,attractionSort:'recommended',onlyFeatured:false
 };
@@ -28,7 +28,7 @@ function save(){
  try{
   localStorage.setItem(storageKey,JSON.stringify({
    ids:state.ids,customStops:state.ids.map(id=>customStops.get(id)).filter(Boolean),stay:state.stay,date:state.date,time:state.time,foodType:state.foodType,plan:state.plan,ratings:state.ratings,evidence:state.evidence,
-   layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,showAll:state.showAll,
+   layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,showAll:state.showAll,pickTier:state.pickTier,tagFilter:state.tagFilter,
    demo:state.demo,limit:state.limit,fuelTarget:state.fuelTarget,planLocked:state.planLocked,planOrder:state.planOrder
   }));
  }catch{}
@@ -479,6 +479,8 @@ function getResults(){
      if(!hasRoute()&&points.length&&(!canDriveTogether(points)||!points.some(a=>a.area===p.area||straight(p,a)<8)))continue;
    }
    if((p.category==='food'||p.category==='attraction')&&!state.showAll&&!isPick(p))continue;
+   if(!state.showAll&&state.pickTier==='top'&&p.tier==='more')continue;
+   if(state.tagFilter.length&&!state.tagFilter.every(t=>(p.tags||[]).includes(t)))continue;
    if(p.category==='food'&&(!eligibleRating(p)||(state.foodType!=='all'&&foodKind(p)!==state.foodType)))continue;
    const likelyTime=timeAtPlace(p,match),open=likelyTime?opening(p.hours,likelyTime):null;
    if(state.onlyOpen&&open!==true)continue;
@@ -506,6 +508,7 @@ function getResults(){
 function isPick(p){return p.recommend===true||(p.category==='attraction'&&p.recommend!==false&&!!attractionBadge(p));}
 function pickExtras(p){
  let html='';
+ for(const t of p.tags||[])html+='<span class="tag soft">'+safe(t)+'</span>';
  if(p.googleRating)html+='<span class="tag">Google ★ '+safe(Number(p.googleRating).toFixed(1))+(p.googleCount?' · '+safe(Number(p.googleCount).toLocaleString('en-MY'))+' 则':'')+'</span>';
  if(p.recommend===true&&p.caveat)html+='<span class="tag caveat" title="为什么还推荐">'+safe(p.caveat)+'</span>';
  if(p.recommend===false&&p.notRecommended)html+='<span class="tag alert">不推荐：'+safe(p.notRecommended)+'</span>';
@@ -560,6 +563,11 @@ function renderFilters(){
      '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label><label class="check"><input type="checkbox" id="show-all" '+(state.showAll?'checked':'')+'>显示全部地点</label>'+(state.area==='route'?distance+open:'');
  }
  html+='</div>';
+ if(state.category!=='fuel'){
+   html+='<div class="filters"><label>推荐范围<select id="pick-tier">'+option('top','只看精选',state.pickTier)+option('all','精选＋更多推荐',state.pickTier)+'</select></label></div>';
+   const tags=[...new Set([...livePlaces.values()].filter(p=>p.category===state.category&&(state.showAll||isPick(p))).flatMap(p=>p.tags||[]))].sort((a,b)=>a.localeCompare(b,'zh'));
+   if(tags.length)html+='<div class="tag-filter" aria-label="按标签筛选">'+tags.map(t=>'<button type="button" data-tag-filter="'+safe(t)+'" aria-pressed="'+String(state.tagFilter.includes(t))+'">'+safe(t)+'</button>').join('')+'</div>';
+ }
  if(state.category==='food')html+='<p class="filter-note">'+(state.showAll?'':'默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。')+'按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
@@ -1149,6 +1157,13 @@ $('category-tabs').addEventListener('click',event=>{
  if(state.category!=='attraction'&&zoneLabels.has(state.area))selectArea(areaState(state.area));
  else{renderArea();renderFilters();renderPlaces();}
 });
+$('category-filters').addEventListener('click',event=>{
+ const chip=event.target.closest('[data-tag-filter]');
+ if(!chip)return;
+ const t=chip.dataset.tagFilter;
+ state.tagFilter=state.tagFilter.includes(t)?state.tagFilter.filter(x=>x!==t):[...state.tagFilter,t];
+ save();limitCards=9;renderFilters();renderPlaces();drawMap();
+});
 $('category-filters').addEventListener('change',event=>{
  const control=event.target;
  if(control.dataset.minimum!==undefined)state.minimum[Number(control.dataset.minimum)]=Number(control.value);
@@ -1157,6 +1172,7 @@ $('category-filters').addEventListener('change',event=>{
  if(control.id==='distance-limit')state.limit=Number(control.value);
  if(control.id==='unknown')state.showUnknown=control.checked;
  if(control.id==='show-all')state.showAll=control.checked;
+ if(control.id==='pick-tier')state.pickTier=control.value;
  if(control.id==='demo')state.demo=control.checked;
  if(control.id==='only-open')state.onlyOpen=control.checked;
  if(control.id==='fuel-target')state.fuelTarget=Number(control.value);

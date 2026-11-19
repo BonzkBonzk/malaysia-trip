@@ -267,6 +267,8 @@ basePlaces.push(...[
   },
   {
     "id": "brickfields-pisang-goreng",
+    "tier": "top",
+    "tags": ["档口小吃", "甜点小吃", "老字号", "排队名店"],
     "title": "Brickfields Pisang Goreng（Uncle Chiam）",
     "mapsName": "十五碑炸香蕉",
     "aliases": [
@@ -330,6 +332,8 @@ basePlaces.push(...[
   },
   {
     "id": "lawanya-brickfields",
+    "tier": "top",
+    "tags": ["档口小吃", "印度菜", "素食友好", "平价", "只收现金"],
     "title": "Lawanya Food Corner",
     "category": "food",
     "foodKind": "restaurant",

@@ -79,3 +79,9 @@
 .gl-place.pick{width:18px;height:18px;background:#e0531f}
 .gl-place span{position:absolute;left:18px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:11px;font-weight:600;color:#1f3a33;text-shadow:0 0 3px #fff,0 0 3px #fff;pointer-events:none}
 @media (max-width:640px){.map-stage.gl-ready{min-height:360px}.gl-place span{display:none}.gl-place.pick span{display:block}}
+
+/* Tier + tag filters */
+.tag-filter{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.tag-filter button{padding:4px 10px;border:1px solid #cfe0da;border-radius:999px;background:#fff;font-size:.8rem;cursor:pointer}
+.tag-filter button[aria-pressed="true"]{background:#0f5c4c;border-color:#0f5c4c;color:#fff}
+.tag.soft{background:#eef5f2;color:#2f5a4f}
