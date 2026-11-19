@@ -109,6 +109,7 @@ async function calculate(userAction=false){
    if(token!==routeToken)return;
    route=normalizeRoute(routeStore.get(key),nextPoints);
    routeMessage('');
+   fitMapToRoute();
  }catch(err){
    if(token!==routeToken)return;
    const messages={
@@ -127,7 +128,7 @@ async function calculate(userAction=false){
  }
 }
 
-let mapScope='all',mapScale=1,panX=0,panY=0,focusedRegion=null;
+let mapScope='all',mapScale=1,panX=0,panY=0,focusedRegion=null,fitBox=null;
 let pointerDrag=null;
 const mapPointers=new Map();
 const bounds={west:[99.35,1.15,104.65,6.95],east:[109.25,.65,119.8,7.55]};
@@ -154,7 +155,7 @@ function mapFrames(w,h){
  else if(w<520)frames=[{x:0,y:0,w,h:h/2,key:'west'},{x:0,y:h/2,w,h:h/2,key:'east'}];
  else frames=[{x:0,y:0,w:w*.47,h,key:'west'},{x:w*.47,y:0,w:w*.53,h,key:'east'}];
  return frames.map(frame=>{
-   const [a,b,c,d]=(focusedRegion&&stateBounds(focusedRegion))||bounds[frame.key];
+   const [a,b,c,d]=(fitBox&&mapScope===frame.key&&fitBox)||(focusedRegion&&stateBounds(focusedRegion))||bounds[frame.key];
    const scale=Math.min(Math.max(12,frame.w-48)/(c-a),Math.max(12,frame.h-44)/(d-b))*mapScale;
    const midX=frame.x+frame.w/2+panX,midY=frame.y+frame.h/2+panY+7;
    const lon0=(a+c)/2,lat0=(b+d)/2;
@@ -249,12 +250,22 @@ function drawMap(){
 }
 function setMapScope(scope,focus=null){
  const scopeChanged=mapScope!==scope;
- mapScope=scope;focusedRegion=focus;mapScale=1;panX=0;panY=0;
+ mapScope=scope;focusedRegion=focus;fitBox=null;mapScale=1;panX=0;panY=0;
  if(scopeChanged&&typeof draft!=='undefined'&&$('stops').children.length)renderStops();
  document.querySelectorAll('[data-region]').forEach(b=>{const on=b.dataset.region===scope;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
  drawMap();
 }
 // Zoom keeping the map point under (x,y) still.
+// Frame the map around the current route so nearby stops don't overlap.
+function fitMapToRoute(){
+ const pts=[...points,...(route?.coordinates||[])];
+ if(!pts.length||mapScope==='all')return;
+ let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;
+ for(const p of pts){a=Math.min(a,p.lon);b=Math.min(b,p.lat);c=Math.max(c,p.lon);d=Math.max(d,p.lat);}
+ const padX=Math.max(.06,(c-a)*.18),padY=Math.max(.06,(d-b)*.18);
+ fitBox=[a-padX,b-padY,c+padX,d+padY];focusedRegion=null;mapScale=1;panX=0;panY=0;
+ drawMap();
+}
 function zoomAt(x,y,step){
  const before=mapScale,next=Math.min(7,Math.max(.78,mapScale*step)),k=next/before;
  const frame=mapFrames($('map-stage').clientWidth,$('map-stage').clientHeight).find(f=>x>=f.x&&x<f.x+f.w&&y>=f.y&&y<f.y+f.h);
