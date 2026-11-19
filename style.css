@@ -85,3 +85,34 @@
 .tag-filter button{padding:4px 10px;border:1px solid #cfe0da;border-radius:999px;background:#fff;font-size:.8rem;cursor:pointer}
 .tag-filter button[aria-pressed="true"]{background:#0f5c4c;border-color:#0f5c4c;color:#fff}
 .tag.soft{background:#eef5f2;color:#2f5a4f}
+
+/* 现在出发 live trip */
+.live-trip{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--line,#e2ebe7)}
+.live-start{width:100%;padding:12px;font-size:1.05rem}
+.live-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.live-head span{color:#5b6f68;font-size:.85rem}
+.live-head .text-button{margin-left:auto}
+.live-next{margin:10px 0;padding:12px 14px;border-radius:12px;background:#0f5c4c;color:#fff;display:grid;gap:4px}
+.live-next small{opacity:.8}
+.live-next strong{font-size:1.15rem}
+.live-next b{font-size:1.2rem}
+.live-actions{display:flex;gap:10px;margin-top:6px;align-items:center}
+.live-actions .text-button{color:#fff}
+.primary-link{display:inline-block;padding:7px 12px;border-radius:9px;background:#fff;color:#0f5c4c!important;font-weight:700;text-decoration:none}
+.live-suggest .primary-link{background:#0f5c4c;color:#fff!important}
+.live-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.live-tools button{padding:12px;border-radius:12px;border:1px solid #cfe0da;background:#fff;font-size:1rem;font-weight:700;cursor:pointer}
+.live-tools button[aria-pressed="true"]{border-color:#0f5c4c;background:#eef6f2}
+.live-drawer{margin-top:8px;padding:10px;border-radius:12px;background:#f7faf9}
+.live-suggest{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.live-suggest li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;background:#fff;border:1px solid #e2ebe7}
+.live-suggest small{display:block;color:#5b6f68}
+.live-link{display:inline-block;margin-top:8px;font-size:.85rem}
+.live-list{list-style:none;margin:10px 0 0;padding:0;display:grid;gap:4px;font-size:.9rem}
+.live-list li{display:flex;gap:10px}.live-list time{min-width:44px;font-weight:700;color:#0f5c4c}
+.live-list em.warn{font-style:normal;color:#b42318;font-size:.8rem}
+.live-bar{position:fixed;left:10px;right:10px;bottom:10px;z-index:50;display:flex;gap:8px;max-width:640px;margin:0 auto;padding:8px;border-radius:16px;background:#0f3d33;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.live-bar button{border:0;border-radius:11px;background:#1d5a4c;color:#fff;font-size:1.25rem;padding:0 14px;cursor:pointer}
+.live-bar .live-bar-main{flex:1;display:flex;flex-direction:column;align-items:flex-start;padding:6px 12px;font-size:1rem;background:transparent;text-align:left}
+.live-bar-main small{opacity:.75;font-size:.72rem}.live-bar-main span{font-size:.85rem;opacity:.9}
+body.live-on{padding-bottom:84px}
