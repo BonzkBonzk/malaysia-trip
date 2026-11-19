@@ -318,6 +318,10 @@ basePlaces.push(...[
   {
     "id": "visalatchi-brickfields",
     "title": "Restaurant Visalatchi's Banana Leaf",
+    "aliases": [
+      "Visalatchi’s Banana Leaf",
+      "Visalatchi's Banana Leaf"
+    ],
     "category": "food",
     "foodKind": "restaurant",
     "tag": "切蒂纳德蕉叶饭",
