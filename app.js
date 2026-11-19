@@ -20,7 +20,7 @@ const state={
  plan:Array.isArray(saved.plan)?saved.plan.filter(p=>p?.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)):[],
  ratings:saved.ratings||{},evidence:saved.evidence||{},layovers:saved.layovers||{},category:'food',area:'route',scope:'all',
  preset:saved.preset in {balanced:1,food:1,service:1}?saved.preset:'balanced',minimum:Array.isArray(saved.minimum)?saved.minimum:[0,0,0],
- showUnknown:saved.showUnknown??true,demo:saved.demo??false,limit:saved.limit??15,
+ showUnknown:saved.showUnknown??true,showAll:saved.showAll??false,demo:saved.demo??false,limit:saved.limit??15,
  fuelTarget:saved.fuelTarget??180,onlyOpen:false,
  planLocked:saved.planLocked===true,planOrder:saved.planOrder||null,attractionSort:'recommended',onlyFeatured:false
 };
@@ -28,7 +28,7 @@ function save(){
  try{
   localStorage.setItem(storageKey,JSON.stringify({
    ids:state.ids,customStops:state.ids.map(id=>customStops.get(id)).filter(Boolean),stay:state.stay,date:state.date,time:state.time,foodType:state.foodType,plan:state.plan,ratings:state.ratings,evidence:state.evidence,
-   layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,
+   layovers:state.layovers,preset:state.preset,minimum:state.minimum,showUnknown:state.showUnknown,showAll:state.showAll,
    demo:state.demo,limit:state.limit,fuelTarget:state.fuelTarget,planLocked:state.planLocked,planOrder:state.planOrder
   }));
  }catch{}
@@ -450,6 +450,7 @@ function getResults(){
      if(hasRoute()&&(!match||match.distance>state.limit))continue;
      if(!hasRoute()&&points.length&&(!canDriveTogether(points)||!points.some(a=>a.area===p.area||straight(p,a)<8)))continue;
    }
+   if((p.category==='food'||p.category==='attraction')&&!state.showAll&&!isPick(p))continue;
    if(p.category==='food'&&(!eligibleRating(p)||(state.foodType!=='all'&&foodKind(p)!==state.foodType)))continue;
    const likelyTime=timeAtPlace(p,match),open=likelyTime?opening(p.hours,likelyTime):null;
    if(state.onlyOpen&&open!==true)continue;
@@ -471,6 +472,18 @@ function getResults(){
    return (a.p.osm?1:0)-(b.p.osm?1:0)||(a.match?.distance||0)-(b.match?.distance||0)||a.p.title.localeCompare(b.p.title);
  });
  return items;
+}
+// A pick is a place we checked and recommend. Food needs an explicit recommend:true;
+// attractions also count when they already carry a landmark/traveller badge.
+function isPick(p){return p.recommend===true||(p.category==='attraction'&&p.recommend!==false&&!!attractionBadge(p));}
+function pickExtras(p){
+ let html='';
+ if(p.googleRating)html+='<span class="tag">Google ★ '+safe(Number(p.googleRating).toFixed(1))+(p.googleCount?' · '+safe(Number(p.googleCount).toLocaleString('en-MY'))+' 则':'')+'</span>';
+ if(p.recommend===true&&p.caveat)html+='<span class="tag caveat" title="为什么还推荐">'+safe(p.caveat)+'</span>';
+ if(p.recommend===false&&p.notRecommended)html+='<span class="tag alert">不推荐：'+safe(p.notRecommended)+'</span>';
+ const list=p.mustEat||p.mustDo;
+ const must=list&&list.length?'<p class="must-list"><b>'+(p.mustEat?'必吃':'必玩')+'</b> '+list.map(x=>safe(x.name)+(x.price?' <span class="must-price">'+safe(x.price)+'</span>':'')).join(' · ')+(p.priceNote?' <small>（'+safe(p.priceNote)+'）</small>':'')+'</p>':'';
+ return (html?'<div class="pick-tags">'+html+'</div>':'')+must;
 }
 function attractionBadge(p){
  if(p.landmark)return '代表景点';
@@ -511,15 +524,15 @@ function renderFilters(){
    html+='<label>美食分类<select id="food-kind">'+Object.entries(foodKinds).map(([value,label])=>option(value,label,state.foodType)).join('')+'</select></label>';
    html+='<label>按你在意的项目排序<select id="rating-preset">'+[['balanced','食物+服务平均'],['food','食物优先'],['service','服务优先']].map(([value,label])=>option(value,label,state.preset)).join('')+'</select></label>';
    html+=metrics.map((name,i)=>i===1?'':'<label>'+name+'最低<select data-minimum="'+i+'">'+[[0,'不限'],[1,'1 星'],[2,'2 星'],[3,'3 星'],[4,'4 星'],[5,'5 星']].map(([value,label])=>option(value,label,state.minimum[i])).join('')+'</select></label>').join('');
-   html+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="unknown" '+(state.showUnknown?'checked':'')+'>含资料不足</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
+   html+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="show-all" '+(state.showAll?'checked':'')+'>显示全部地点（含未核实、不推荐）</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
  }else if(state.category==='fuel'){
    html+='<label>预计出发后补油<select id="fuel-target">'+[60,100,140,180,220,300,400,500].map(n=>option(n,n+' 公里左右',state.fuelTarget)).join('')+'</select></label>'+distance;
  }else{
    html+='<label>景点排序<select id="attraction-sort">'+[['recommended','综合推荐'],['rating','评分从高到低']].map(([value,label])=>option(value,label,state.attractionSort)).join('')+'</select></label>'+
-     '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label>'+(state.area==='route'?distance+open:'');
+     '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label><label class="check"><input type="checkbox" id="show-all" '+(state.showAll?'checked':'')+'>显示全部地点</label>'+(state.area==='route'?distance+open:'');
  }
  html+='</div>';
- if(state.category==='food')html+='<p class="filter-note">按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='food')html+='<p class="filter-note">'+(state.showAll?'':'默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。')+'按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
@@ -646,7 +659,7 @@ function placeCard({p,match,open},pick){
    '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+'</div>'+
    '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
-   (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+
+   (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+pickExtras(p)+
    (p.category==='food'?showRatings(p):p.category==='attraction'?showAttractionRating(p):'')+
    '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span>'+plusDrive+'</div>'+
    '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'已加入':state.planLocked?'行程已固定':'＋ 加入行程')+'</button>'+
@@ -669,7 +682,7 @@ function renderPlaces(){
    (zoneLabels.has(state.area)?'':'<button type="button" id="refresh-places"'+(searchLoading?' disabled':'')+'>查找地图地点</button>');
  $('place-list').innerHTML=items.length?order.slice(0,limitCards).map(item=>placeCard(item,pick)).join('')+
     (items.length>limitCards?'<button type="button" class="add-line" id="more-results">查看更多地点</button>':''):
-    '<div class="card empty">'+(searchLoading?'正在查找可加入行程的地点。':'没有符合现有筛选的地点。可以放宽范围、显示资料不足的店，或选另一个州属。')+'</div>';
+    '<div class="card empty">'+(searchLoading?'正在查找可加入行程的地点。':(state.showAll?'没有符合现有筛选的地点。可以放宽范围或选另一个州属。':'这里还没有核实过的推荐地点。可勾选「显示全部地点」先看未核实的地点，或选另一个地区。'))+'</div>';
 }
 function nearestAnchor(p,match,leg){
  if(!leg)return [p];
@@ -1022,6 +1035,7 @@ $('category-filters').addEventListener('change',event=>{
  if(control.id==='food-kind')state.foodType=control.value;
  if(control.id==='distance-limit')state.limit=Number(control.value);
  if(control.id==='unknown')state.showUnknown=control.checked;
+ if(control.id==='show-all')state.showAll=control.checked;
  if(control.id==='demo')state.demo=control.checked;
  if(control.id==='only-open')state.onlyOpen=control.checked;
  if(control.id==='fuel-target')state.fuelTarget=Number(control.value);

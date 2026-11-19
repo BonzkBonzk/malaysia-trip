@@ -40,3 +40,11 @@
 .event-actions button:disabled{opacity:.45;cursor:default}
 
 .photo-label{position:absolute;right:4px;bottom:4px;padding:2px 5px;border-radius:4px;background:#213730e8;color:#fff;font-size:.68rem;font-weight:700}.place-actions .photo-source{font-size:.78rem}
+
+/* Recommended-pick tags and must-eat / must-do list */
+.pick-tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.tag.caveat{background:#fff4dc;color:#7a4b00;border:1px solid #f0d59c}
+.must-list{margin:6px 0 2px;font-size:.92em;line-height:1.55}
+.must-list b{color:var(--accent,#0f4d3c);margin-right:4px}
+.must-price{color:#7a4b00;font-weight:600}
+.must-list small{color:#6b6b6b}

@@ -259,7 +259,11 @@ basePlaces.push(...[
     "hoursText": "约 07:00 起，晚间时间各来源不一 · 出发前核对",
     "price": "素蕉叶饭约 RM8，加肉每碟约 RM8–14（食客记录）",
     "source": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
-    "duration": 45
+    "duration": 45,
+    "recommend": false,
+    "googleRating": 3.8,
+    "googleCount": 2139,
+    "notRecommended": "近半年冷菜、小份贵的投诉增加，服务混乱、算错账"
   },
   {
     "id": "brickfields-pisang-goreng",
@@ -280,7 +284,29 @@ basePlaces.push(...[
     "hoursText": "约中午开档，常在 15:30–16:00 前卖完 · 出发前核对",
     "price": "每件约 RM1.40–2.00",
     "source": "https://www.freemalaysiatoday.com/category/2023/07/21/brickfields-go-to-pisang-goreng-spot-still-hot-40-years-on/",
-    "duration": 20
+    "duration": 20,
+    "recommend": true,
+    "googleRating": 4.2,
+    "googleCount": 598,
+    "caveat": "好吃但要排队 10–30 分钟 · 15:30 后多数卖完",
+    "mustEat": [
+      {
+        "name": "炸香蕉（Pisang Raja）",
+        "price": "RM1.80"
+      },
+      {
+        "name": "炸年糕夹芋头番薯",
+        "price": "RM1.80"
+      },
+      {
+        "name": "咖喱角",
+        "price": "RM2"
+      },
+      {
+        "name": "芝麻球"
+      }
+    ],
+    "priceNote": "价钱为 2025 年食客记录"
   },
   {
     "id": "sri-paandi-brickfields",
@@ -296,7 +322,11 @@ basePlaces.push(...[
     "hoursText": "早餐至夜宵 · 具体时间出发前核对",
     "price": "一般 RM10–25 / 人；有食客反映自取菜价不透明，挑菜前先问价",
     "source": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
-    "duration": 40
+    "duration": 40,
+    "recommend": false,
+    "googleRating": 3.6,
+    "googleCount": 2783,
+    "notRecommended": "食物评价两极，自取计价不透明"
   },
   {
     "id": "lawanya-brickfields",
@@ -313,7 +343,30 @@ basePlaces.push(...[
     "hoursText": "周一至周六 05:30–17:00，周日休 · 菜卖完即止",
     "price": "约 RM10–22 / 人（食客记录）；只收现金",
     "source": "https://klfoodie.com/top-10-must-eat-food-in-brickfields-kl",
-    "duration": 35
+    "duration": 35,
+    "recommend": true,
+    "googleRating": 4.3,
+    "googleCount": 737,
+    "caveat": "露天很热 · 周日休 · 下午菜会卖完",
+    "mustEat": [
+      {
+        "name": "羊肉咖喱"
+      },
+      {
+        "name": "炸鱼"
+      },
+      {
+        "name": "菠菜咖喱 Keerai"
+      },
+      {
+        "name": "Petai 参巴"
+      },
+      {
+        "name": "饭＋1 素 1 荤",
+        "price": "约 RM10–12"
+      }
+    ],
+    "priceNote": "两人两样菜加羊肉和炸鸡约 RM22，2026 年食客记录"
   },
   {
     "id": "visalatchi-brickfields",
@@ -333,6 +386,10 @@ basePlaces.push(...[
     "hoursText": "早餐至晚餐 · 出发前核对",
     "price": "两人蕉叶饭加一碟羊肉约 RM37（食客记录）",
     "source": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
-    "duration": 45
+    "duration": 45,
+    "recommend": false,
+    "googleRating": 3.5,
+    "googleCount": 642,
+    "notRecommended": "多位食客提到苍蝇和蟑螂"
   }
 ]);
