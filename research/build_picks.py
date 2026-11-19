@@ -10,7 +10,8 @@ js='''// Curated research results (generated). Each entry either updates an exis
 // "evidence" and "note" extend reviews.js for that id.
 const pickData = %s;
 for (const [id, v] of Object.entries(pickData)) {
-  const {evidence, note, ...fields} = v;
+  const {evidence, note, photo, ...fields} = v;
+  if (photo) venuePhotos[id] = photo;
   const existing = basePlaces.find(p => p.id === id);
   if (existing) Object.assign(existing, fields);
   else if (fields.title && fields.lat != null) basePlaces.push({id, category: 'food', ...fields});

@@ -156,3 +156,4 @@ body.live-on{padding-bottom:84px}
 .evidence-list li.neg{background:#fdf0ef}.evidence-list li.neg .ev-dot{background:#d0453a}
 .evidence-list li.mixed{background:#fdf6e8}.evidence-list li.mixed .ev-dot{background:#d99a26}
 .why{margin:6px 0 2px;font-size:.92em;line-height:1.55}.why b{color:#2f5aa8;margin-right:4px}
+.place-media.icon{display:grid;place-items:center;font-size:44px;border-radius:12px;background:linear-gradient(135deg,#eef6f2,#dfeee8);min-height:112px}

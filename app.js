@@ -634,8 +634,17 @@ function photoFor(p){
    (p.category==='food'&&simplifiedTitle(p.title)==='bingxue'?bingxueProductPhoto:undefined);
  return photo?.path&&!unavailablePhotoPaths.has(photo.path)?photo:undefined;
 }
+// Cards without a licensed photo get a category icon in the same slot.
+function placeIcon(p){
+ if(p.category==='fuel')return '⛽';
+ if(p.category==='attraction'){
+   const t=(p.tag||'')+(p.tags||[]).join('');
+   return /瀑布|森林|公园|湖|自然|红树|步道/.test(t)?'🌳':/海|滩|岛/.test(t)?'🏖️':/庙|寺|清真|教堂|宗教/.test(t)?'🛕':/购物|商场/.test(t)?'🛍️':/乐园|动物|水族|亲子/.test(t)?'🎡':/夜市|美食/.test(t)?'🏮':'📍';
+ }
+ return {restaurant:'🍛',stall:'🍢',dessert:'🍧',drinks:'☕',bakery:'🥐'}[foodKind(p)]||'🍽️';
+}
 function placeMedia(p,photo){
- if(!photo)return '';
+ if(!photo)return p.sample?'':'<div class="place-media icon" aria-hidden="true">'+placeIcon(p)+'</div>';
  const label=photo.kind==='product'?'品牌商品图':'';
  return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的照片来源" title="'+safe([photo.author,photo.license].filter(Boolean).join(' · '))+'">'+
    '<img loading="lazy" decoding="async" width="144" height="112" referrerpolicy="no-referrer" data-place-photo="'+safe(photo.path)+'"'+
@@ -706,7 +715,7 @@ function placeCard({p,match,open},pick){
  let plusDrive='';
  if(detour)plusDrive=detour.min>=1?'<span class="tag '+(detour.min>=25?'alert':'')+'">绕路 +'+safe(timeText(detour.min))+'</span>':'<span class="tag soft">顺路</span>';
  else if(match&&p.category!=='fuel'&&!p.sample&&detourQueue.has(p.id))plusDrive='<span class="tag soft">绕路计算中…</span>';
- return '<article class="card place'+(photo?' with-photo':'')+'">'+placeMedia(p,photo)+'<div class="place-body">'+
+ return '<article class="card place'+(photo||!p.sample?' with-photo':'')+'">'+placeMedia(p,photo)+'<div class="place-body">'+
    '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+(plusDrive?'<span class="detour-corner">'+plusDrive+'</span>':'')+'</div>'+
    '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
