@@ -712,7 +712,7 @@ function placeCard({p,match,open},pick){
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
    (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+pickExtras(p)+
    (p.category==='food'?showRatings(p):p.category==='attraction'?showAttractionRating(p):'')+
-   '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span></div>'+
+   '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.mustDo||p.mustEat?'':p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span></div>'+
    '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'✓ 已加入':state.planLocked?'已固定':'＋ 加入')+'</button>'+
    (p.category!=='fuel'&&!p.sample?'<button type="button" class="icon-btn" data-rate="'+safe(p.id)+'" title="我的记录" aria-label="我的记录">✎</button>':'')+
    (!p.sample?'<a class="icon-btn" href="'+safe(googleDirections([p],{fromHere:true}))+'" target="_blank" rel="noopener" title="'+(p.ferryTransfer?'导航到客运码头':'导航')+'" aria-label="导航">🧭</a>':'')+
