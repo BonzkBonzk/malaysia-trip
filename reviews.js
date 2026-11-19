@@ -320,24 +320,237 @@ const venuePhotos = {
     "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
   },
   "hua-mui-jalan-trus": {
-    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Hua_Mui_Restaurant.jpg/330px-Hua_Mui_Restaurant.jpg",
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Hua_Mui_Restaurant.jpg/330px-Hua_Mui_Restaurant.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
     "source": "https://commons.wikimedia.org/wiki/File:Hua_Mui_Restaurant.jpg",
     "author": "Chongkian",
     "license": "CC BY-SA 4.0",
-    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
   },
   "hameediyah-campbell": {
-    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Hameediyah_1.jpg/250px-Hameediyah_1.jpg",
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/59/Hameediyah_1.jpg/250px-Hameediyah_1.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
     "source": "https://commons.wikimedia.org/wiki/File:Hameediyah_1.jpg",
     "author": "Slleong",
     "license": "CC0",
-    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
   },
   "kepong-metropolitan-park": {
-    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Kepong_Metropolitan_Park_(220710)_22.jpg/330px-Kepong_Metropolitan_Park_(220710)_22.jpg",
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/75/Kepong_Metropolitan_Park_%28220710%29_22.jpg/330px-Kepong_Metropolitan_Park_%28220710%29_22.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
     "source": "https://commons.wikimedia.org/wiki/File:Kepong_Metropolitan_Park_(220710)_22.jpg",
     "author": "*angys*",
     "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "petronas-towers": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Kuala_Lumpur_skyline_and_Petronas_Twin_Towers_night_view_from_Kampung_Baru.jpg_01.jpg/330px-Kuala_Lumpur_skyline_and_Petronas_Twin_Towers_night_view_from_Kampung_Baru.jpg_01.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Kuala_Lumpur_skyline_and_Petronas_Twin_Towers_night_view_from_Kampung_Baru.jpg_01.jpg",
+    "author": "ELIZABETH XIONG",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "klcc-park": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/Klcc_suriya_park_views_%283%29.JPG/330px-Klcc_suriya_park_views_%283%29.JPG?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Klcc_suriya_park_views_(3).JPG",
+    "author": "irvin calicut",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+  },
+  "batu-caves": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Batu_Caves%2C_Kuala_Lumpur_%2849508742752%29.jpg/330px-Batu_Caves%2C_Kuala_Lumpur_%2849508742752%29.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Batu_Caves,_Kuala_Lumpur_(49508742752).jpg",
+    "author": "Dennis Sylvester Hurd from Minuwangoda, WP, Sri Lanka, Canada",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0"
+  },
+  "merdeka-square": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Kuala_Lumpur%2C_Malaysia%2C_Merdeka_Square_at_night.jpg/330px-Kuala_Lumpur%2C_Malaysia%2C_Merdeka_Square_at_night.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Kuala_Lumpur,_Malaysia,_Merdeka_Square_at_night.jpg",
+    "author": "Vyacheslav Argenberg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "islamic-arts-kl": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e3/Kuala_Lumpur_Malaysia_Islamic-Arts-Museum-01.jpg/330px-Kuala_Lumpur_Malaysia_Islamic-Arts-Museum-01.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Kuala_Lumpur_Malaysia_Islamic-Arts-Museum-01.jpg",
+    "author": "CEphoto, Uwe Aranas",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+  },
+  "central-market": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Pasar_Seni_%28Central_Market%29_exterior%2C_Kuala_Lumpur_20231114_102911.jpg/330px-Pasar_Seni_%28Central_Market%29_exterior%2C_Kuala_Lumpur_20231114_102911.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Pasar_Seni_(Central_Market)_exterior,_Kuala_Lumpur_20231114_102911.jpg",
+    "author": "Wiki Farazi",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en"
+  },
+  "petaling-street": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Petaling_Street%2C_Kuala_Lumpur_01.jpg/330px-Petaling_Street%2C_Kuala_Lumpur_01.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Petaling_Street,_Kuala_Lumpur_01.jpg",
+    "author": "IQRemix",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+  },
+  "jalan-alor": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/db/Jalan_Alor_-_Kuala_Lumpur.jpg/330px-Jalan_Alor_-_Kuala_Lumpur.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Jalan_Alor_-_Kuala_Lumpur.jpg",
+    "author": "IQRemix",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0"
+  },
+  "sunway-lagoon": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/85/Sunway_Lagoon_entrance_%28220711%29.jpg/330px-Sunway_Lagoon_entrance_%28220711%29.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Sunway_Lagoon_entrance_(220711).jpg",
+    "author": "*angys*",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "shah-alam-blue-mosque": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/da/Masjid_Sultan_Salahuddin_Abdul_Aziz.jpg/330px-Masjid_Sultan_Salahuddin_Abdul_Aziz.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Masjid_Sultan_Salahuddin_Abdul_Aziz.jpg",
+    "author": "RidzwanRosdi",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "sekinchan-paddy": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Sekinchan_Paddy_Field.jpg/330px-Sekinchan_Paddy_Field.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Sekinchan_Paddy_Field.jpg",
+    "author": "Auyong83",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "sepang-circuit": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/55/Sepang_International_Circuit.JPG/330px-Sepang_International_Circuit.JPG?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Sepang_International_Circuit.JPG",
+    "author": "mondayblues",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+  },
+  "kl-bird-park": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5e/Bird_park%2C_Kuala_Lumpur.JPG/330px-Bird_park%2C_Kuala_Lumpur.JPG?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Bird_park,_Kuala_Lumpur.JPG",
+    "author": "Colocho",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5"
+  },
+  "saloma-link": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/47/Saloma_Link_Bridge_01.jpg/330px-Saloma_Link_Bridge_01.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Saloma_Link_Bridge_01.jpg",
+    "author": "Renek78",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "titiwangsa-lake": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a7/Taman_Tasik_Titiwangsa_%28220413%29_01.jpg/330px-Taman_Tasik_Titiwangsa_%28220413%29_01.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Taman_Tasik_Titiwangsa_(220413)_01.jpg",
+    "author": "*angys*",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "royal-selangor-vc": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cc/Production_area_at_the_Royal_Selangor_Visitor_Centre.jpg/330px-Production_area_at_the_Royal_Selangor_Visitor_Centre.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Production_area_at_the_Royal_Selangor_Visitor_Centre.jpg",
+    "author": "Chlod",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "kwai-chai-hong": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/13/Kwai_Chai_Hong%2C_Kuala_Lumpur.jpg/250px-Kwai_Chai_Hong%2C_Kuala_Lumpur.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Kwai_Chai_Hong,_Kuala_Lumpur.jpg",
+    "author": "Diviana Jackson",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0"
+  },
+  "royal-gallery-klang": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c9/Galeri_Diraja_Sultan_Abdul_Aziz.jpg/330px-Galeri_Diraja_Sultan_Abdul_Aziz.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Galeri_Diraja_Sultan_Abdul_Aziz.jpg",
+    "author": "Benjy8769",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "perdana-garden": {
+    "path": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/21/Taman_Botani_Perdana_Kuala_Lumpur_1.jpg/330px-Taman_Botani_Perdana_Kuala_Lumpur_1.jpg?utm_campaign=index&utm_content=thumbnail&utm_source=commons.wikimedia.org",
+    "source": "https://commons.wikimedia.org/wiki/File:Taman_Botani_Perdana_Kuala_Lumpur_1.jpg",
+    "author": "Renek78",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+  },
+  "thean-hou": {
+    "path": "https://upload.wikimedia.org/wikipedia/commons/d/da/Thean_Hou_Temple%2C_2023_%2806%29.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Thean_Hou_Temple,_2023_(06).jpg",
+    "author": "Bahnfrend",
+    "license": "CC BY-SA 4.0",
     "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/"
+  },
+  "kuantan-fireflies": {
+    "path": "https://upload.wikimedia.org/wikipedia/commons/2/21/Kampung_Kuantan_Firefly_Park_walkway_%28230318%29.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Kampung_Kuantan_Firefly_Park_walkway_(230318).jpg",
+    "author": "*angys*",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
   }
+};
+
+// Match branch photos by venue name and proximity to the confirmed location.
+const venuePhotoLocations = [
+  {
+    "label": "Semuka Café · Seri Negara",
+    "names": [
+      "semukacafe",
+      "semukacafeserinegara"
+    ],
+    "area": "kl",
+    "lat": 3.14184448,
+    "lon": 101.68206632,
+    "radiusKm": 0.12,
+    "path": "https://seraigroup.com.my/wp-content/uploads/2026/01/DSC06265.min_-683x1024.jpg",
+    "alternate": "https://seraigroup.com.my/wp-content/uploads/2026/01/DSC06256.min_-683x1024.jpg",
+    "source": "https://seraigroup.com.my/outlet/semuka-cafe/",
+    "author": "Serai Group",
+    "alt": "Semuka Café Seri Negara 的店家实拍"
+  },
+  {
+    "label": "San Cai Ting Vegetarian Restaurant · Kepong Baru",
+    "names": [
+      "sancaitingvegetarianrestaurant",
+      "sancaitingvegetarian",
+      "sancaitingvegrestaurant",
+      "sancaitingvegetarianrestaurantkepongbaru",
+      "sancaitingvegetarianrestaurantkepongbaru善财亭素食馆"
+    ],
+    "area": "kl",
+    "lat": 3.20541,
+    "lon": 101.64283,
+    "radiusKm": 0.38,
+    "path": "https://myweekendplan.asia/wp-content/uploads/2023/04/San-Cai-Ting-Vegetarian-Restaurant-1024x473.jpg",
+    "alternate": "https://myweekendplan.asia/wp-content/uploads/2023/04/San-Cai-Ting-Vegetarian-Restaurant--1024x683.jpg",
+    "source": "https://myweekendplan.asia/top-best-vegetarian-restaurants-in-kepong/",
+    "author": "Eugene Wong (#VegFoodHunt) · My Weekend Plan",
+    "alternateAuthor": "Ian H’ng · My Weekend Plan",
+    "alt": "甲洞新村善财亭素食馆实拍"
+  },
+  {
+    "label": "Bingxue · Taman Danau Desa",
+    "names": [
+      "bingxue",
+      "bingxueteaicecream",
+      "bingxuetamandanaudesa",
+      "bingxueteaicecreamtamandanaudesa"
+    ],
+    "area": "kl",
+    "lat": 3.09875,
+    "lon": 101.68706,
+    "radiusKm": 0.32,
+    "path": "https://ak-d.tripcdn.com/images/1mi3f224x98v0kb2z05A4_W_640_0_R5_Q80.jpg?proc=source%2Ftrip",
+    "source": "https://sg.trip.com/moments/detail/kuala-lumpur-45-143888082/",
+    "author": "H2O_cf · Trip.com Moments",
+    "alt": "Bingxue Taman Danau Desa 分店实拍",
+    "alternate": "https://ak-d.tripcdn.com/images/1mi3f224x98v0kb2z05A4_W_200_0_R5_Q50.jpg?proc=source%2Ftrip"
+  }
+];
+const bingxueProductPhoto = {
+  "kind": "product",
+  "label": "Bingxue · 品牌商品图",
+  "path": "https://foodpanda.dhmedia.io/image/menu-import-gateway-prd/regions/AS/chains/Lightflex_MY/f1ad6b01f350b08255d7047f1f238aa4.jpg?height=150&width=150",
+  "source": "https://www.foodpanda.my/restaurant/uwpi/bingxue-tea-and-ice-cream-taman-danau-desa",
+  "author": "Bingxue · Foodpanda 商家菜单",
+  "alt": "Bingxue 品牌产品图"
 };

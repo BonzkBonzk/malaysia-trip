@@ -1,7 +1,6 @@
 const $=id=>document.getElementById(id);
 const safe=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const categoryNames={food:'美食',attraction:'景点',fuel:'油站'};
-const icons={food:'♨',attraction:'◇',fuel:'⛽'};
 const metrics=['食物','卫生','服务'];
 const city=id=>cities.find(p=>p.id===id)||customStops.get(id);
 const areaState=id=>id?.split(':')[0];
@@ -558,11 +557,33 @@ function googlePlace(p){
  if(p.googlePlaceId)q.set('query_place_id',p.googlePlaceId);
  return p.googleReviewsUrl||'https://www.google.com/maps/search/?'+q;
 }
-function placeMedia(p){
- const photo=venuePhotos[p.id];
- if(photo)return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" data-photo-fallback="'+safe(googlePlace(p))+'" title="'+safe(photo.author+' · '+photo.license)+'"><img loading="lazy" width="128" height="100" src="'+safe(photo.path)+'" alt="'+safe(p.title)+'"><span class="photo-error">Google Maps 照片</span></a>';
- if(p.sample)return '<div class="place-media placeholder '+p.category+'" aria-hidden="true"><span>'+icons[p.category]+'</span><small>暂无照片</small></div>';
- return '<a class="place-media placeholder '+p.category+'" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的 Google Maps 地点详情"><span aria-hidden="true">'+icons[p.category]+'</span><small>Google Maps 照片</small></a>';
+const unavailablePhotoPaths=new Set();
+function photoFor(p){
+ if(p.sample)return undefined;
+ const name=simplifiedTitle(p.title);
+ const photo=venuePhotos[p.id]||venuePhotoLocations.find(entry=>
+   entry.area===p.area&&entry.names.includes(name)&&straight(p,entry)<entry.radiusKm)||
+   (p.category==='food'&&name==='bingxue'?bingxueProductPhoto:undefined);
+ return photo?.path&&!unavailablePhotoPaths.has(photo.path)?photo:undefined;
+}
+function placeMedia(p,photo){
+ if(!photo)return '';
+ const label=photo.kind==='product'?'品牌商品图':'';
+ return '<a class="place-media photo" href="'+safe(photo.source)+'" target="_blank" rel="noopener" aria-label="打开 '+safe(p.title)+' 的照片来源" title="'+safe([photo.author,photo.license].filter(Boolean).join(' · '))+'">'+
+   '<img loading="lazy" decoding="async" width="144" height="112" referrerpolicy="no-referrer" data-place-photo="'+safe(photo.path)+'"'+
+   (photo.alternate?' data-alternate="'+safe(photo.alternate)+'"':'')+' src="'+safe(photo.path)+'" alt="'+safe(photo.alt||p.title+' 的实拍照片')+'">'+
+   (label?'<span class="photo-label">'+label+'</span>':'')+'</a>';
+}
+function renderPhotoCredits(){
+ const credits=[
+   {label:'马六甲河封面',source:'https://commons.wikimedia.org/wiki/File:River_of_Melaka.jpg',author:'Leonardo0511',license:'CC BY-SA 4.0',licenseUrl:'https://creativecommons.org/licenses/by-sa/4.0/'},
+   ...Object.entries(venuePhotos).map(([id,photo])=>({...photo,label:livePlaces.get(id)?.title||id})),
+   ...venuePhotoLocations,
+   ...(bingxueProductPhoto?[bingxueProductPhoto]:[])
+ ];
+ $('photo-credits-list').innerHTML=credits.map(photo=>
+   '<li>'+externalLink(photo.source,photo.label)+' · '+safe(photo.author)+(photo.alternateAuthor?'／'+safe(photo.alternateAuthor):'')+
+   (photo.licenseUrl?' · '+externalLink(photo.licenseUrl,photo.license):'')+'</li>').join('');
 }
 function ratingDetails(p){
  const entries=publishedEvidence[p.id]||[], ratings=sourceEstimates(p);
@@ -588,6 +609,7 @@ function showAttractionRating(p){
 let limitCards=9;
 function placeCard({p,match,open},pick){
  const linked=state.plan.some(s=>s.id===p.id);
+ const photo=photoFor(p);
  const detour=match&&detours.get(routeKey(points)+'|'+p.id+'|'+match.leg);
  let proximity='';
  if(match){
@@ -601,7 +623,7 @@ function placeCard({p,match,open},pick){
  const badge=pick?.p.id===p.id?'<span class="tag">建议补油</span>':p.sample?'<span class="tag alert">虚构演示</span>':featured?'<span class="tag attraction-badge">'+featured+'</span>':'';
  let plusDrive='';
  if(detour)plusDrive='<span class="tag '+(detour.min>=25?'alert':'')+'">加开约 '+safe(timeText(detour.min))+' · '+safe(km(detour.km))+'</span>';
- return '<article class="card place">'+placeMedia(p)+'<div class="place-body">'+
+ return '<article class="card place'+(photo?' with-photo':'')+'">'+placeMedia(p,photo)+'<div class="place-body">'+
    '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+'</div>'+
    '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
    (proximity?'<span>'+safe(proximity)+'</span>':'')+(when?'<span>'+safe(when)+'</span>':'')+'</div>'+
@@ -613,7 +635,8 @@ function placeCard({p,match,open},pick){
    (!p.sample?externalLink(googleDirections([p],{fromHere:true}),p.ferryTransfer?'导航到客运码头':'导航到这里'):'')+
    (match&&p.category!=='fuel'&&!p.sample&&!detour?'<button type="button" class="text-button" data-detour="'+safe(p.id)+'">估算绕路</button>':'')+
    (!p.sample?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener">'+(p.osm?'地图资料':'查看来源')+'</a>':'')+
-   (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" title="打开 Google Maps 地点详情，可切换照片或评论">Google Maps 照片／评论</a>':'')+
+   (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener">Google Maps 评论</a>':'')+
+   (photo?externalLink(photo.source,'照片来源','photo-source'):'')+
    (p.tickets?'<a href="'+safe(p.tickets)+'" target="_blank" rel="noopener">购票</a>':'')+'</div></div></article>';
 }
 function renderPlaces(){
@@ -1096,6 +1119,7 @@ $('rating-form').addEventListener('submit',event=>{
  save();$('rating-dialog').close();renderPlaces();notify('评分已保存');
 });
 async function init(){
+ renderPhotoCredits();
  $('trip-date').value=state.date;$('trip-time').value=state.time;
  if(state.stay){
    $('stay-name').value=state.stay.title;$('stay-coords').value=state.stay.lat+', '+state.stay.lon;$('stay-details').open=true;
@@ -1258,11 +1282,16 @@ if(typeof globalThis.tripGeoTest==='object')globalThis.tripGeoTest.scoreReviewTe
 
 document.addEventListener('error',event=>{
  const image=event.target;
- const link=image?.closest?.('[data-photo-fallback]');
- if(image?.tagName!=='IMG'||!link)return;
- link.href=link.dataset.photoFallback;
- link.title='在 Google Maps 查看照片';
- link.classList.add('photo-unavailable');
+ if(image?.tagName!=='IMG'||!image.dataset.placePhoto)return;
+ if(image.dataset.alternate){
+   const alternate=image.dataset.alternate;
+   delete image.dataset.alternate;
+   image.src=alternate;
+   return;
+ }
+ unavailablePhotoPaths.add(image.dataset.placePhoto);
+ image.closest('.with-photo')?.classList.remove('with-photo');
+ image.closest('.place-media')?.remove();
 },true);
 
 void init();
