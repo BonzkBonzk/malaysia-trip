@@ -1,4 +1,544 @@
 const publishedEvidence = {
+  "vishal-brickfields": [
+    {
+      "label": "Google 地图 · 食客（1 周前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "喜欢午餐的咖喱和蔬菜，鸡肉 varuval 不太辣，但认为服务可以更好。",
+      "signals": [
+        1,
+        null,
+        0
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "10 年后重访：蕉叶饭、鱼咖喱和羊肉 varuval 仍然好吃，但店里混乱，挥手很久没人理，只好自己去下单。",
+      "signals": [
+        1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（10 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "鸡肉 masala、苏东和羊肉都入味，但服务员乱走、没人接单，不打算再来。",
+      "signals": [
+        1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（7 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "素蕉叶饭 RM8 很划算；羊肉 varuval、羊头咖喱和 Kerala 鸡都不错，接待也好。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "午餐大部分菜上桌时是冷的，味道一般，觉得几间外的店更好。",
+      "signals": [
+        -1,
+        null,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "thosai 和 vadai 不热、平平；店员有先说明 vadai 不是热的。",
+      "signals": [
+        -1,
+        null,
+        0
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "羊肉一小碟 RM14，多骨、上桌时冷，服务态度差。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "收银多算一人饭钱，外带少给一包 petai 参巴；建议结账前核对账单。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "thosai 等了约 30 分钟，结果被送去后到的桌，取消时没有道歉。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "多次请店员收拾前一桌留下的剩菜，直到离开都没人处理。",
+      "signals": [
+        null,
+        -1,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（8 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "食客说在店里看到一只死蟑螂，即停止进食。",
+      "signals": [
+        null,
+        -1,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "全家常去的蕉叶饭，香料平衡，菜色多。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+      "summary": "以前常来，这次食物低于平均、收银态度差。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    }
+  ],
+  "brickfields-pisang-goreng": [
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "排了约 20 分钟；炸香蕉外脆内甜，炸年糕的芋头、番薯和年糕比例很好。",
+      "signals": [
+        1,
+        null,
+        0
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "一直有人排队，喜欢炸香蕉和年糕。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（7 个月前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "现炸，整根香蕉，炸年糕酥脆；价钱合理。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "下单后才炸，带回家仍然脆。",
+      "signals": [
+        1,
+        null,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "炸香蕉新鲜、外脆内多汁，说香蕉都干净新鲜。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "下单时会告知等候时间，排队有秩序；最爱炸年糕。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "炸香蕉每件 RM1.80 偏贵，咖喱角偏甜、炸过头。",
+      "signals": [
+        -1,
+        null,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "帮手说话粗鲁，等了 30–60 分钟，食物只是还可以。",
+      "signals": [
+        0,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（10 个月前）",
+      "url": "https://www.google.com/maps/place/%E5%8D%81%E4%BA%94%E7%A2%91%E7%82%B8%E9%A6%99%E8%95%89/@3.133142,101.6892241,17z",
+      "summary": "现炸小批出锅所以要排队，强烈推荐；可在路边临停取货。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    }
+  ],
+  "sri-paandi-brickfields": [
+    {
+      "label": "Google 地图 · 食客（3 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "dosa、马铃薯咖喱和 tandoori 鸡都出色，店员友善；后面厕所算干净但没有马桶座和厕纸。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（9 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "香料足、像本地人吃的地方；自己挑菜再由店员算价，流程顺。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（11 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "thosai、咖啡和羊肉 peratal 很好，但 Maggi 炒面、米粉和 tandoori 鸡做得差，建议只点传统菜。",
+      "signals": [
+        0,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（3 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "客满但服务快；炒饭炒焦了。",
+      "signals": [
+        0,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "mee goreng 和 poori 等了 30 分钟，马铃薯配菜已变坏。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "thosai 太咸，炸鸡外焦里半生。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "下午三点的豆芽已坏，其余两样普通，RM25 不值。",
+      "signals": [
+        -1,
+        null,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "先拿菜后才知价钱，觉得自取计价不透明。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（6 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "人多时坚持自取、不接单，早餐管理变差。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "食物好、店员勤快，但看到收银在店里大声骂员工。",
+      "signals": [
+        1,
+        null,
+        0
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+      "summary": "点的东西被换成别的，roti canai 不热，价钱贵。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    }
+  ],
+  "lawanya-brickfields": [
+    {
+      "label": "Google 地图 · 食客（3 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "羊肉咖喱浓稠入味、饭量大；店面干净，人多时出餐仍快。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "两样菜加羊肉和炸鸡 RM22 两人分；午餐要排队，建议早到。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（10 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "瓦煲盛菜，味道像家常菜；说档口很干净。只收现金。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（8 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "鸡肉 peratal 煮太干，饭偏湿，咖喱和蔬菜不错。",
+      "signals": [
+        0,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（7 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "简单干净的档口，由一家人经营，很友善。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "开档前看到员工仔细清洁；羊肉嫩、petai 参巴和炸虾都好。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "菜放瓦煲保温但上桌不够热；羊肉没有膻味，价钱合理。",
+      "signals": [
+        0,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "40 多款菜，tauhu 参巴辣度刚好，朋友觉得羊肉偏韧；露天很热。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/Lawanya+Food+Corner/@3.1356077,101.6914114,17z",
+      "summary": "女老板友善，食物好吃又便宜，难停车。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    }
+  ],
+  "visalatchi-brickfields": [
+    {
+      "label": "Google 地图 · 食客（2 周前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "简单的素食蕉叶饭好吃，服务很好。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "羊肉 varuval 特别好，老板出来聊天并送汤试喝。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "店不忙也等了 10 分钟一片 roti，店员粗鲁，还在别人吃饭时收走蕉叶。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "一小碟带骨羊肉 RM16 太贵；阿姨不断推销加菜，要个汤匙却不耐烦。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（2 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "鸡肉 peratal 好吃，但店员没笑容、像刚吵完架。",
+      "signals": [
+        1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（3 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "全店只有两三个咖喱桶轮流用，刚舀一点就被别桌拿走。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（5 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "厨师推荐的 Kili parotta 很好吃，服务友善。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（4 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "到处是苍蝇，一片 thosai 也要等。",
+      "signals": [
+        null,
+        -1,
+        -1
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（10 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "很多苍蝇，桌下和地上看到蟑螂。",
+      "signals": [
+        null,
+        -1,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（10 个月前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "另一位食客也说苍蝇多、卫生需要大改。",
+      "signals": [
+        null,
+        -1,
+        null
+      ]
+    },
+    {
+      "label": "Google 地图 · 食客（1 年前）",
+      "url": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+      "summary": "素食蕉叶饭味道正宗，环境干净，服务快。",
+      "signals": [
+        1,
+        1,
+        1
+      ]
+    }
+  ],
   "osm-boardwalk-3.1356-101.6856": [
     {
       "label": "Wanderlog · Google 食客（2025 年 3 月）",
@@ -1194,6 +1734,11 @@ const publishedEvidence = {
 };
 
 const reviewAssessmentNotes = {
+  "vishal-brickfields": "食物大多数人仍认可，尤其羊肉 varuval、鱼咖喱和炸鸡；但近半年冷菜和小份贵的投诉变多。服务是明显弱点：人多时没人接单、上错菜、结账算错都有人遇到，结账前要核对账单。在意服务的人我不推荐，只想吃蕉叶饭可以去，避开午市高峰。",
+  "brickfields-pisang-goreng": "这一区最稳的点心档。炸香蕉和炸年糕几乎一致好评，现炸、外脆内甜。代价是排队（常见 10–30 分钟）和下午就卖完，没有座位。值得特地绕过来买，建议中午过后早点到。",
+  "sri-paandi-brickfields": "两极化。早餐 thosai、appam、传统咖喱和羊肉 peratal 好评多；炒面、炒饭和下午剩菜的投诉多，近几个月也有人说变质或变咸。自取后才算钱，有人觉得贵又不透明，挑菜前先问价。只点传统菜比较稳。",
+  "lawanya-brickfields": "这批里我最推荐的一家。家常味的印度杂饭，菜色多、价钱低，评论对食物、接待和档口清洁都一致正面。缺点是露天很热、要排队、下午菜会卖完，周日休息。中午前到最好。",
+  "visalatchi-brickfields": "羊肉、鸡肉 varuval 和 parotta 有不少好评，但卫生是这批里最差的：多位食客近一年提到苍蝇，也有人看到蟑螂。服务两极，近期粗鲁和慢的投诉不少。在意卫生的人我不推荐；同一排可以改去 Vishal 或 Lawanya。",
   "osm-boardwalk-3.1356-101.6856": "Hilton Kuala Lumpur 的池畔酒吧。鸡尾酒、鲜椰子和汉堡有具体好评，几位食客都称赞接待。可见样本偏正面，用餐区清洁资料不足。",
   "osm-gurneysflavour-3.1357-101.6881": "Platinum Sentral 底层店。可读的几条 Google 评论集中提到等候、餐点温度或结账沟通问题。赶车时我会优先选别家。现场清洁资料不足。",
   "osm-qasiookitchen-3.1356-101.6883": "Jalan Stesen Sentral 2 的底层店。几位食客对餐点和服务评价一致偏好，但没说明具体哪道菜最稳，清洁也缺少具体记录。",

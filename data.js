@@ -242,3 +242,93 @@ basePlaces.push(...[
     "duration": 60
   }
 ]);
+
+// Brickfields batch (2026-11-19): picked from local food guides, assessed from Google Maps reviews.
+basePlaces.push(...[
+  {
+    "id": "vishal-brickfields",
+    "title": "Vishal Food & Catering",
+    "category": "food",
+    "foodKind": "restaurant",
+    "tag": "蕉叶饭",
+    "area": "kl",
+    "lat": 3.1351925,
+    "lon": 101.6920414,
+    "googleArea": "22 Jalan Scott, Brickfields, Kuala Lumpur",
+    "detail": "Jalan Scott 老字号蕉叶饭，对面是兴都庙。羊肉 varuval、鱼咖喱和炸鸡最常被点名。只收现金或 QR。",
+    "hoursText": "约 07:00 起，晚间时间各来源不一 · 出发前核对",
+    "price": "素蕉叶饭约 RM8，加肉每碟约 RM8–14（食客记录）",
+    "source": "https://www.google.com/maps/place/Vishal+Food+%26+Catering/@3.1351925,101.6920414,17z",
+    "duration": 45
+  },
+  {
+    "id": "brickfields-pisang-goreng",
+    "title": "Brickfields Pisang Goreng（Uncle Chiam）",
+    "mapsName": "十五碑炸香蕉",
+    "aliases": [
+      "Brickfields Pisang Goreng",
+      "十五碑炸香蕉"
+    ],
+    "category": "food",
+    "foodKind": "dessert",
+    "tag": "炸香蕉 · 年糕",
+    "area": "kl",
+    "lat": 3.133142,
+    "lon": 101.6892241,
+    "googleArea": "2 Jalan Thambipillay, Brickfields, Kuala Lumpur",
+    "detail": "YMCA 对面路边档，营业超过 40 年。只卖炸香蕉、炸年糕（夹芋头番薯）、芝麻球和咖喱角，现点现炸。没有座位，附近难停车。",
+    "hoursText": "约中午开档，常在 15:30–16:00 前卖完 · 出发前核对",
+    "price": "每件约 RM1.40–2.00",
+    "source": "https://www.freemalaysiatoday.com/category/2023/07/21/brickfields-go-to-pisang-goreng-spot-still-hot-40-years-on/",
+    "duration": 20
+  },
+  {
+    "id": "sri-paandi-brickfields",
+    "title": "Sri Paandi Restaurant",
+    "category": "food",
+    "foodKind": "restaurant",
+    "tag": "南印度菜 · 自取",
+    "area": "kl",
+    "lat": 3.1292891,
+    "lon": 101.6842761,
+    "googleArea": "254 Jalan Tun Sambanthan, Brickfields, Kuala Lumpur",
+    "detail": "自己端钢盘挑菜，坐下后由店员算价。早上的 thosai、appam 和传统咖喱口碑最好；炒面、炒饭类较常被批评。",
+    "hoursText": "早餐至夜宵 · 具体时间出发前核对",
+    "price": "一般 RM10–25 / 人；有食客反映自取菜价不透明，挑菜前先问价",
+    "source": "https://www.google.com/maps/place/Sri+Paandi+Restaurant/@3.1292891,101.6842761,17z",
+    "duration": 40
+  },
+  {
+    "id": "lawanya-brickfields",
+    "title": "Lawanya Food Corner",
+    "category": "food",
+    "foodKind": "restaurant",
+    "tag": "印度杂饭",
+    "area": "kl",
+    "lat": 3.1356077,
+    "lon": 101.6914114,
+    "googleArea": "8 Jalan Scott, Brickfields, Kuala Lumpur",
+    "detail": "巷子里的家庭式路边档，40 多款瓦煲菜，素食选择多。羊肉咖喱、炸鱼和菠菜咖喱常被点名。露天、炎热，要早到。",
+    "hours": "Mo-Sa 05:30-17:00; Su off",
+    "hoursText": "周一至周六 05:30–17:00，周日休 · 菜卖完即止",
+    "price": "约 RM10–22 / 人（食客记录）；只收现金",
+    "source": "https://klfoodie.com/top-10-must-eat-food-in-brickfields-kl",
+    "duration": 35
+  },
+  {
+    "id": "visalatchi-brickfields",
+    "title": "Restaurant Visalatchi's Banana Leaf",
+    "category": "food",
+    "foodKind": "restaurant",
+    "tag": "切蒂纳德蕉叶饭",
+    "area": "kl",
+    "lat": 3.1354071,
+    "lon": 101.6918795,
+    "googleArea": "18 Jalan Scott, Brickfields, Kuala Lumpur",
+    "detail": "和 Vishal 同一排的老店。羊肉 varuval、鸡肉 varuval 和 Kili parotta 有具体好评；多位食客提到苍蝇。",
+    "hoursText": "早餐至晚餐 · 出发前核对",
+    "price": "两人蕉叶饭加一碟羊肉约 RM37（食客记录）",
+    "source": "https://www.google.com/maps/place/Restaurant+Visalatchi's+Banana+Leaf/@3.1354071,101.6918795,17z",
+    "duration": 45
+  }
+]);
