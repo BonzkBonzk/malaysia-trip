@@ -201,7 +201,18 @@ function tileAt(p,z=14){
 }
 const tileCache=new Map();
 let tileManifest;
-async function mapPlaceTiles(points,neighbors){
+async function fetchTile(url,x,y,z){
+ let lastError;
+ for(let attempt=0;attempt<2;attempt++){
+   try{
+     const r=await fetch(url,{signal:AbortSignal.timeout(25000)});
+     if(!r.ok)throw Error('Tile '+r.status);
+     return decodePOIs(new Uint8Array(await r.arrayBuffer()),x,y,z);
+   }catch(e){lastError=e;if(attempt===0)await new Promise(res=>setTimeout(res,800));}
+ }
+ throw lastError;
+}
+async function mapPlaceTiles(points,neighbors,onTile){
  const z=14, tiles=new Map();
  for(const point of points){
    const [x,y]=tileAt(point,z);
@@ -210,18 +221,22 @@ async function mapPlaceTiles(points,neighbors){
      if(!tiles.has(key))tiles.set(key,[x+dx,y+dy]);
    }
  }
- tileManifest ||= timedJSON('https://tiles.openfreemap.org/planet',6500).catch(e=>{tileManifest=null;throw e;});
+ tileManifest ||= timedJSON('https://tiles.openfreemap.org/planet',15000).catch(e=>{tileManifest=null;throw e;});
  const manifest=await tileManifest;
- const results=await Promise.allSettled([...tiles].slice(0,16).map(([key,[x,y]])=>{
-   if(!tileCache.has(key)){
-     const url=manifest.tiles[0].replace('{z}',z).replace('{x}',x).replace('{y}',y);
-     tileCache.set(key,fetch(url,{signal:AbortSignal.timeout(9000)}).then(async r=>{
-       if(!r.ok)throw Error('Tile '+r.status);
-       return decodePOIs(new Uint8Array(await r.arrayBuffer()),x,y,z);
-     }).catch(e=>{tileCache.delete(key);throw e;}));
+ // Each z14 tile is 0.3-0.7 MB, so load a few at a time instead of all at once.
+ const queue=[...tiles].slice(0,16), results=[];
+ const worker=async()=>{
+   while(queue.length){
+     const [key,[x,y]]=queue.shift();
+     if(!tileCache.has(key)){
+       const url=manifest.tiles[0].replace('{z}',z).replace('{x}',x).replace('{y}',y);
+       tileCache.set(key,fetchTile(url,x,y,z).catch(e=>{tileCache.delete(key);throw e;}));
+     }
+     try{const value=await tileCache.get(key);results.push({status:'fulfilled',value});if(onTile)onTile(value);}
+     catch(reason){results.push({status:'rejected',reason});}
    }
-   return tileCache.get(key);
- }));
+ };
+ await Promise.all(Array.from({length:4},worker));
  if(results.every(r=>r.status==='rejected'))throw Error('Map data unavailable');
  return {places:results.flatMap(r=>r.status==='fulfilled'?r.value:[]),partial:results.some(r=>r.status==='rejected')};
 }

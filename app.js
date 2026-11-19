@@ -19,7 +19,7 @@ const state={
  foodType:saved.foodType||'all',
  plan:Array.isArray(saved.plan)?saved.plan.filter(p=>p?.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon)):[],
  ratings:saved.ratings||{},evidence:saved.evidence||{},layovers:saved.layovers||{},category:'food',area:'route',scope:'all',
- preset:saved.preset||'balanced',minimum:Array.isArray(saved.minimum)?saved.minimum:[0,0,0],
+ preset:saved.preset in {balanced:1,food:1,service:1}?saved.preset:'balanced',minimum:Array.isArray(saved.minimum)?saved.minimum:[0,0,0],
  showUnknown:saved.showUnknown??true,demo:saved.demo??false,limit:saved.limit??15,
  fuelTarget:saved.fuelTarget??180,onlyOpen:false,
  planLocked:saved.planLocked===true,planOrder:saved.planOrder||null,attractionSort:'recommended',onlyFeatured:false
@@ -382,7 +382,7 @@ async function discoverPlaces(){
  if(!candidates.length){searchLoading=false;searchStatus='';renderPlaces();return;}
  searchLoading=true;searchStatus='';renderPlaces();
  try{
-   const response=await mapPlaceTiles(candidates,area!=='route');
+   const response=await mapPlaceTiles(candidates,area!=='route',places=>{if(token===searchToken&&places.length){addDiscoveredPlaces(places);renderPlaces();}});
    if(token!==searchToken)return;
    addDiscoveredPlaces(response.places);
    searchStatus=response.partial?'部分地图地点暂时无法读取。':'';
@@ -393,13 +393,14 @@ async function discoverPlaces(){
    if(token===searchToken){searchLoading=false;renderPlaces();renderItinerary();}
  }
 }
-const presets={balanced:[1,1,1],food:[1,0,0],hygiene:[0,1,0],service:[0,0,1]};
+// Hygiene is shown as a note only: diners rarely describe it, so it never drives ranking or filters.
+const presets={balanced:[1,0,1],food:[1,0,0],service:[0,0,1]};
 function scoresFor(p){const auto=sourceEstimates(p);return metrics.map((_,i)=>auto[i].score??state.evidence[p.id]?.[i]?.score??state.ratings[p.id]?.[i]??p.scores?.[i]??null);}
 function eligibleRating(p){
  const values=scoresFor(p);
  const selected=presets[state.preset]||presets.balanced;
  if(!state.showUnknown&&!values.some((v,i)=>selected[i]&&v!=null))return false;
- return state.minimum.every((min,i)=>!min||(values[i]!=null&&values[i]>=min));
+ return state.minimum.every((min,i)=>i===1||!min||(values[i]!=null&&values[i]>=min));
 }
 function weightedScore(p){
  const values=scoresFor(p);let n=0,weight=0;
@@ -508,8 +509,8 @@ function renderFilters(){
  let html='<div class="filters">';
  if(state.category==='food'){
    html+='<label>美食分类<select id="food-kind">'+Object.entries(foodKinds).map(([value,label])=>option(value,label,state.foodType)).join('')+'</select></label>';
-   html+='<label>按你在意的项目排序<select id="rating-preset">'+[['balanced','三项平均'],['food','食物优先'],['hygiene','卫生优先'],['service','服务优先']].map(([value,label])=>option(value,label,state.preset)).join('')+'</select></label>';
-   html+=metrics.map((name,i)=>'<label>'+name+'最低<select data-minimum="'+i+'">'+[[0,'不限'],[1,'1 星'],[2,'2 星'],[3,'3 星'],[4,'4 星'],[5,'5 星']].map(([value,label])=>option(value,label,state.minimum[i])).join('')+'</select></label>').join('');
+   html+='<label>按你在意的项目排序<select id="rating-preset">'+[['balanced','食物+服务平均'],['food','食物优先'],['service','服务优先']].map(([value,label])=>option(value,label,state.preset)).join('')+'</select></label>';
+   html+=metrics.map((name,i)=>i===1?'':'<label>'+name+'最低<select data-minimum="'+i+'">'+[[0,'不限'],[1,'1 星'],[2,'2 星'],[3,'3 星'],[4,'4 星'],[5,'5 星']].map(([value,label])=>option(value,label,state.minimum[i])).join('')+'</select></label>').join('');
    html+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="unknown" '+(state.showUnknown?'checked':'')+'>含资料不足</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
  }else if(state.category==='fuel'){
    html+='<label>预计出发后补油<select id="fuel-target">'+[60,100,140,180,220,300,400,500].map(n=>option(n,n+' 公里左右',state.fuelTarget)).join('')+'</select></label>'+distance;
@@ -518,7 +519,7 @@ function renderFilters(){
      '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label>'+(state.area==='route'?distance+open:'');
  }
  html+='</div>';
- if(state.category==='food')html+='<p class="filter-note">按食物、卫生或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='food')html+='<p class="filter-note">按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
@@ -601,7 +602,7 @@ function ratingDetails(p){
  const verdict=summary?'<p class="place-desc">'+safe(summary)+'</p>':'';
  return verdict+'<details class="rating-evidence"><summary>看评分依据 · '+entries.length+' 条资料</summary>'+
    '<p>'+safe(evidenceCount)+' · 核对于 '+reviewAssessmentDate+'</p>'+
-   '<p>每项至少两条相关观察才估分。卫生只反映食客当时所见的清洁情况。</p>'+
+   '<p>食物、服务每项至少两条相关观察才估分。卫生只作备注，反映食客当时所见的清洁情况，不参与排序。</p>'+
    '<ul>'+entries.map(entry=>'<li>'+externalLink(entry.url,entry.label)+' · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
 }
 
@@ -609,6 +610,10 @@ function showRatings(p){
  const values=scoresFor(p),auto=sourceEstimates(p);
  return '<div class="rating-row">'+metrics.map((name,i)=>{
    const value=values[i];
+   if(i===1){
+     if(value==null)return '';
+     return '<span class="aspect-score hygiene-note" title="卫生备注，不参与排序">卫生 <b>'+(value>=3.5?'食客说干净':value<=2.5?'有人反映不干净':'评价不一')+'</b></span>';
+   }
    const source=auto[i].score!=null?'评论证据 · '+auto[i].n+' 条':p.sample?'演示':state.evidence[p.id]?.[i]?.score!=null?'导入估分':state.ratings[p.id]?.[i]!=null?'我的记录':'资料不足';
    return '<span class="aspect-score" title="'+safe(source)+'">'+name+' <b>'+(value==null?'—':'★ '+Number(value).toFixed(1))+'</b></span>';
  }).join('')+(auto.some(v=>v.score!=null)?'<span class="score-mode">公开评论估分</span>':'')+'</div>'+ratingDetails(p);
@@ -1024,7 +1029,7 @@ $('category-filters').addEventListener('change',event=>{
  if(control.id==='featured-attractions')state.onlyFeatured=control.checked;
  save();limitCards=9;renderPlaces();renderItinerary();
  const note=$('category-filters').querySelector('.filter-note');
- if(control.id==='demo'&&note)note.textContent='按食物、卫生或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。'+(state.demo?' 演示店铺为虚构。':'');
+ if(control.id==='demo'&&note)note.textContent='按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'');
 });
 $('results-header').addEventListener('click',event=>{
  if(event.target.id==='refresh-places')void discoverPlaces();
