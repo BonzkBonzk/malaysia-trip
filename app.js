@@ -60,19 +60,22 @@ function routeKey(waypoints){return waypoints.map(p=>p.lat.toFixed(5)+','+p.lon.
 function renderStops(){
  $('stops').innerHTML=draft.map((id,i)=>{
    const label=i===0?'起点':i===draft.length-1?'终点':'途经地';
+   // Follow the map's 西马/东马 toggle, but always keep the stop that is already chosen.
+   const inScope=p=>mapScope==='all'||p.id===id||(mapScope==='east')===Boolean(p.east);
    const groups=[
      ['吉隆坡及社区',cities.filter(p=>p.area==='kl')],
      ['雪兰莪',cities.filter(p=>p.area==='sel')],
      ['西马其他城市',cities.filter(p=>!p.east&&!['kl','sel'].includes(p.area))],
      ['东马城市',cities.filter(p=>p.east)]
-   ];
+   ].map(([title,items])=>[title,items.filter(inScope)]).filter(([,items])=>items.length);
    const custom=customStops.get(id);
    if(custom)groups.push(['已查找地点',[custom]]);
    const options=groups.map(([title,items])=>'<optgroup label="'+title+'">'+items.map(p=>
      '<option value="'+safe(p.id)+'" '+(p.id===id?'selected':'')+'>'+safe(makePointWords(p))+'</option>').join('')+'</optgroup>').join('');
-   return '<div class="stop-row"><span class="stop-num">'+(i+1)+'</span><div class="stop-field"><label><span>'+label+'</span>'+
+   return '<div class="stop-row" data-stop-row="'+i+'"><span class="stop-num stop-grip" data-stop-grip="'+i+'" title="拖动调整顺序" aria-label="拖动调整第 '+(i+1)+' 站顺序">'+(i+1)+'</span><div class="stop-field"><label><span>'+label+'</span>'+
       '<select data-stop="'+i+'" aria-label="'+label+' '+(i+1)+'">'+options+'</select></label>'+
-      '<button type="button" class="text-button find-stop" data-find-stop="'+i+'" aria-label="查找'+label+' '+(i+1)+'">查找地点</button></div>'+
+      '<input type="search" class="stop-search" data-search-stop="'+i+'" placeholder="或搜具体地点：商场、酒店、景点、店名" autocomplete="off" aria-label="搜索'+label+' '+(i+1)+'的具体地点">'+
+      '<div class="stop-suggest" data-suggest="'+i+'"></div></div>'+
       (draft.length>2?'<button type="button" class="remove-stop" data-remove-stop="'+i+'" aria-label="移除'+label+'">✕</button>':'<span aria-hidden="true"></span>')+'</div>';
  }).join('');
  $('add-stop').disabled=draft.length>=8;
@@ -239,14 +242,28 @@ function drawMap(){
    }
  }
  $('map-pins').innerHTML=pins.join('');
- $('map-caption').textContent='点州属看地点 · ＋／− 缩放 · 可拖动';
+ $('map-caption').textContent='点州属看地点 · 滚轮或双指缩放 · 可拖动';
  const legend=$('state-legend');
  legend.innerHTML=regions.filter(r=>mapScope==='all'||r.east===(mapScope==='east')).map(r=>
    '<button type="button" data-legend-area="'+r.id+'" aria-pressed="'+String(state.area===r.id)+'"><span aria-hidden="true" style="background:'+stateColors[r.id]+'"></span>'+safe(r.title)+'</button>').join('');
 }
 function setMapScope(scope,focus=null){
+ const scopeChanged=mapScope!==scope;
  mapScope=scope;focusedRegion=focus;mapScale=1;panX=0;panY=0;
+ if(scopeChanged&&typeof draft!=='undefined'&&$('stops').children.length)renderStops();
  document.querySelectorAll('[data-region]').forEach(b=>{const on=b.dataset.region===scope;b.classList.toggle('on',on);b.setAttribute('aria-pressed',String(on));});
+ drawMap();
+}
+// Zoom keeping the map point under (x,y) still.
+function zoomAt(x,y,step){
+ const before=mapScale,next=Math.min(7,Math.max(.78,mapScale*step)),k=next/before;
+ const frame=mapFrames($('map-stage').clientWidth,$('map-stage').clientHeight).find(f=>x>=f.x&&x<f.x+f.w&&y>=f.y&&y<f.y+f.h);
+ mapScale=next;
+ if(frame&&next>1){
+   const cx=x-(frame.x+frame.w/2),cy=y-(frame.y+frame.h/2+7);
+   panX=cx-(cx-panX)*k;panY=cy-(cy-panY)*k;
+ }
+ if(mapScale<=1){panX=0;panY=0;}
  drawMap();
 }
 function zoom(step){
@@ -924,21 +941,94 @@ function renderRouteLock(){
  $('reset-route').disabled=state.planLocked;
 }
 function renderAll(){renderArea();renderFilters();drawMap();renderRouteSummary();renderPlaces();renderItinerary();renderRouteLock();}
+// Recalculate shortly after any stop edit so the map follows the route panel live.
+let routeTimer=0;
+function scheduleRoute(){
+ if(state.planLocked)return;
+ clearTimeout(routeTimer);
+ routeTimer=setTimeout(()=>$('route-form').requestSubmit(),650);
+}
 $('stops').addEventListener('change',event=>{
  const select=event.target.closest('[data-stop]');
- if(select){draft[Number(select.dataset.stop)]=select.value;renderGoogleRoute();}
+ if(select){draft[Number(select.dataset.stop)]=select.value;renderGoogleRoute();scheduleRoute();}
+});
+// Inline place search inside each stop row.
+const suggestResults=new Map();let suggestTimer=0,suggestToken=0;
+function chooseStop(index,selected){
+ const stop=cities.includes(selected)?selected:{...selected,id:'custom-'+selected.lat.toFixed(5)+','+selected.lon.toFixed(5),east:region(selected.area)?.east||false};
+ if(!cities.includes(stop))customStops.set(stop.id,stop);
+ draft[index]=stop.id;renderStops();renderGoogleRoute();
+ if(stop.east!==undefined&&mapScope!=='all'&&(mapScope==='east')!==Boolean(stop.east))setMapScope(stop.east?'east':'west');
+ scheduleRoute();
+}
+function showSuggest(index,items,note=''){
+ suggestResults.set(index,items);
+ const box=$('stops').querySelector('[data-suggest="'+index+'"]');
+ if(!box)return;
+ box.innerHTML=items.map((p,j)=>'<button type="button" data-suggest-pick="'+index+':'+j+'"><strong>'+safe(makePointWords(p))+'</strong><span>'+safe(region(p.area)?.title||'')+'</span></button>').join('')+(note?'<p class="fine">'+safe(note)+'</p>':'');
+}
+$('stops').addEventListener('input',event=>{
+ const input=event.target.closest('[data-search-stop]');
+ if(!input)return;
+ const index=Number(input.dataset.searchStop),name=input.value.trim();
+ clearTimeout(suggestTimer);const token=++suggestToken;
+ if(name.length<2){showSuggest(index,[]);return;}
+ const coords=parseCoordinates(name);
+ if(coords){showSuggest(index,[makeCustomStop(coords.lat,coords.lon,'地图坐标',coords.lat+', '+coords.lon)].filter(Boolean));return;}
+ const local=knownStopMatches(name);
+ showSuggest(index,local,'正在查找更多地点…');
+ suggestTimer=setTimeout(async()=>{
+   try{
+     const features=await lookupMalaysia(name);
+     if(token!==suggestToken)return;
+     const remote=features.map(f=>{
+       const [lon,lat]=f.geometry.coordinates,p=f.properties;
+       if(!Number.isFinite(lon)||!Number.isFinite(lat))return null;
+       return makeCustomStop(lat,lon,p.name||p.street||name,[p.district,p.city].filter((part,i,parts)=>part&&part!==(p.name||p.street)&&parts.indexOf(part)===i).join(', '));
+     }).filter(Boolean);
+     const all=[...local,...remote.filter(r=>!local.some(l=>straight(l,r)<.05))].slice(0,8);
+     showSuggest(index,all,all.length?'':'没有找到。可加上城市名，或贴上地图坐标。');
+   }catch{if(token===suggestToken)showSuggest(index,local,'暂时无法联网查找，只显示站内地点。');}
+ },450);
 });
 $('stops').addEventListener('click',event=>{
+ const pick=event.target.closest('[data-suggest-pick]');
+ if(pick){const [i,j]=pick.dataset.suggestPick.split(':').map(Number);const item=suggestResults.get(i)?.[j];if(item)chooseStop(i,item);return;}
  const find=event.target.closest('[data-find-stop]');
  if(find){openStopSearch(Number(find.dataset.findStop));return;}
  const button=event.target.closest('[data-remove-stop]');if(!button||draft.length<=2)return;
- draft.splice(Number(button.dataset.removeStop),1);renderStops();renderGoogleRoute();
+ draft.splice(Number(button.dataset.removeStop),1);renderStops();renderGoogleRoute();scheduleRoute();
 });
+// Drag a stop's number to reorder the route.
+let stopDrag=null;
+$('stops').addEventListener('pointerdown',event=>{
+ const grip=event.target.closest('[data-stop-grip]');
+ if(!grip||state.planLocked)return;
+ event.preventDefault();
+ stopDrag={from:Number(grip.dataset.stopGrip),to:null,pointer:event.pointerId};
+ grip.setPointerCapture(event.pointerId);
+ grip.closest('.stop-row').classList.add('dragging');
+});
+$('stops').addEventListener('pointermove',event=>{
+ if(stopDrag?.pointer!==event.pointerId)return;
+ const row=document.elementsFromPoint(event.clientX,event.clientY).map(el=>el.closest?.('[data-stop-row]')).find(Boolean);
+ $('stops').querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
+ if(row&&Number(row.dataset.stopRow)!==stopDrag.from){stopDrag.to=Number(row.dataset.stopRow);row.classList.add('drop-target');}
+ else stopDrag.to=null;
+});
+function endStopDrag(event){
+ if(stopDrag?.pointer!==event.pointerId)return;
+ const {from,to}=stopDrag;stopDrag=null;
+ if(to!==null&&to!==from){const [moved]=draft.splice(from,1);draft.splice(to,0,moved);renderStops();renderGoogleRoute();scheduleRoute();}
+ else renderStops();
+}
+$('stops').addEventListener('pointerup',endStopDrag);
+$('stops').addEventListener('pointercancel',endStopDrag);
 $('add-stop').addEventListener('click',()=>{
  if(draft.length>=8)return;
  const prev=city(draft.at(-2));
  const location=cities.find(p=>p.east===prev.east&&!draft.includes(p.id));
- draft.splice(draft.length-1,0,location?.id||prev.id);renderStops();renderGoogleRoute();
+ draft.splice(draft.length-1,0,location?.id||prev.id);renderStops();renderGoogleRoute();scheduleRoute();
  const control=$('stops').querySelector('[data-stop="'+(draft.length-2)+'"]');control?.focus();
 });
 $('route-form').addEventListener('submit',event=>{
@@ -1012,8 +1102,9 @@ mapCanvas.addEventListener('pointerup',event=>{
 });
 for(const name of ['pointercancel','lostpointercapture'])mapCanvas.addEventListener(name,event=>{mapPointers.delete(event.pointerId);pointerDrag=null;});
 mapCanvas.addEventListener('wheel',event=>{
- if(!event.ctrlKey&&!event.metaKey)return;
- event.preventDefault();zoom(event.deltaY<0?1.12:1/1.12);
+ event.preventDefault();
+ const rect=mapCanvas.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;
+ zoomAt(x,y,Math.exp(-event.deltaY*(event.deltaMode===1?.05:.0018)));
 },{passive:false});
 $('state-legend').addEventListener('click',event=>{
  const button=event.target.closest('[data-legend-area]');
@@ -1229,7 +1320,7 @@ async function lookupMalaysia(name){
 }
 function knownStopMatches(name){
  const terms=name.toLowerCase().replace(/\bkl\b/g,'kuala lumpur').split(/\s+/).filter(Boolean);
- return [...cities,...basePlaces.filter(p=>p.category==='attraction')].filter(p=>{
+ return [...cities,...basePlaces.filter(p=>p.category==='attraction'||p.recommend===true)].filter(p=>{
    const label=[makePointWords(p),p.mapsName,zoneLabels.get(p.zone),stateName(p.area),region(p.area)?.title].filter(Boolean).join(' ').toLowerCase();
    return terms.every(term=>label.includes(term));
  }).slice(0,6);
@@ -1282,7 +1373,7 @@ $('stop-results').addEventListener('click',event=>{
  const stop=cities.includes(selected)?selected:{...selected,id:'custom-'+selected.lat.toFixed(5)+','+selected.lon.toFixed(5),east:region(selected.area)?.east||false};
  if(!cities.includes(stop))customStops.set(stop.id,stop);
  const index=stopIndex;
- draft[index]=stop.id;$('stop-search').close();renderStops();renderGoogleRoute();
+ draft[index]=stop.id;$('stop-search').close();renderStops();renderGoogleRoute();scheduleRoute();
  $('stops').querySelector('[data-stop="'+index+'"]')?.focus();
  routeMessage('已选择 '+selected.title+'。点击「计算路线」更新。');
 });
