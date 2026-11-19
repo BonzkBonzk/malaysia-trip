@@ -514,7 +514,7 @@ function isPick(p){return p.recommend===true||isFamous(p)||(p.category==='attrac
 function pickRank(p){return p.recommend===true?(p.tier==='more'?1:0):isFamous(p)?2:p.recommend===false?4:3;}
 function pickExtras(p){
  let html='';
- for(const t of p.tags||[])html+='<span class="tag soft">'+safe(t)+'</span>';
+ for(const t of (p.tags||[]).slice(0,3))html+='<span class="tag soft">'+safe(t)+'</span>';
  if(p.googleRating)html+='<span class="tag">Google ★ '+safe(Number(p.googleRating).toFixed(1))+(p.googleCount?' · '+safe(Number(p.googleCount).toLocaleString('en-MY'))+' 则':'')+'</span>';
  if(p.recommend===true&&p.caveat)html+='<span class="tag caveat" title="为什么还推荐">'+safe(p.caveat)+'</span>';
  if(isFamous(p))html+='<span class="tag famous">名店，但要注意：'+safe(p.notRecommended)+'</span>';
@@ -552,17 +552,18 @@ function activeButtons(selector,active){
    button.classList.toggle('on',v);button.setAttribute('aria-pressed',String(v));
  });
 }
+let moreFiltersOpen=false;
 function renderFilters(){
  activeButtons('#category-tabs [data-category]',state.category);
  const option=(value,label,current)=>'<option value="'+value+'" '+(String(current)===String(value)?'selected':'')+'>'+label+'</option>';
  const distance='<label>距线路直线<select id="distance-limit">'+[3,8,15,30,60].map(n=>option(n,n+' 公里内',state.limit)).join('')+'</select></label>';
  const open='<label class="check"><input type="checkbox" id="only-open" '+(state.onlyOpen?'checked':'')+'>只看预计营业</label>';
- let html='<div class="filters">';
+ let html='<div class="filters">',adv='';
  if(state.category==='food'){
    html+='<label>美食分类<select id="food-kind">'+Object.entries(foodKinds).map(([value,label])=>option(value,label,state.foodType)).join('')+'</select></label>';
-   html+='<label>按你在意的项目排序<select id="rating-preset">'+[['balanced','食物+服务平均'],['food','食物优先'],['service','服务优先']].map(([value,label])=>option(value,label,state.preset)).join('')+'</select></label>';
-   html+=metrics.map((name,i)=>i===1?'':'<label>'+name+'最低<select data-minimum="'+i+'">'+[[0,'不限'],[1,'1 星'],[2,'2 星'],[3,'3 星'],[4,'4 星'],[5,'5 星']].map(([value,label])=>option(value,label,state.minimum[i])).join('')+'</select></label>').join('');
-   html+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="show-all" '+(state.showAll?'checked':'')+'>显示全部地点（含未核实、不推荐）</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
+   adv+='<label>按你在意的项目排序<select id="rating-preset">'+[['balanced','食物+服务平均'],['food','食物优先'],['service','服务优先']].map(([value,label])=>option(value,label,state.preset)).join('')+'</select></label>';
+   adv+=metrics.map((name,i)=>i===1?'':'<label>'+name+'最低<select data-minimum="'+i+'">'+[[0,'不限'],[1,'1 星'],[2,'2 星'],[3,'3 星'],[4,'4 星'],[5,'5 星']].map(([value,label])=>option(value,label,state.minimum[i])).join('')+'</select></label>').join('');
+   adv+='</div><div class="filters">'+distance+open+'<label class="check"><input type="checkbox" id="show-all" '+(state.showAll?'checked':'')+'>显示全部地点（含未核实、不推荐）</label><label class="check"><input type="checkbox" id="demo" '+(state.demo?'checked':'')+'>看评分演示</label>';
  }else if(state.category==='fuel'){
    html+='<label>预计出发后补油<select id="fuel-target">'+[60,100,140,180,220,300,400,500].map(n=>option(n,n+' 公里左右',state.fuelTarget)).join('')+'</select></label>'+distance;
  }else{
@@ -573,12 +574,14 @@ function renderFilters(){
  if(state.category!=='fuel'){
    html+='<div class="filters"><label>推荐范围<select id="pick-tier">'+option('top','只看精选',state.pickTier)+option('all','精选＋更多＋名店',state.pickTier)+'</select></label></div>';
    const tags=[...new Set([...livePlaces.values()].filter(p=>p.category===state.category&&(state.showAll||isPick(p))).flatMap(p=>p.tags||[]))].sort((a,b)=>a.localeCompare(b,'zh'));
+   if(adv)html+='<details class="more-filters"'+(moreFiltersOpen?' open':'')+'><summary>⚙ 更多筛选</summary><div class="filters">'+adv+'</div></details>';
    if(tags.length)html+='<div class="tag-filter" aria-label="按标签筛选">'+tags.map(t=>'<button type="button" data-tag-filter="'+safe(t)+'" aria-pressed="'+String(state.tagFilter.includes(t))+'">'+safe(t)+'</button>').join('')+'</div>';
  }
  if(state.category==='food')html+='<p class="filter-note" title="默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。Google 评论 2,000 条以上的名店即使不推荐也会列在后面并注明原因。食物、服务各至少两条相关观察才估分；卫生只作备注。">ⓘ 只列核实过的店 · 名店另附提醒</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
+ $('category-filters').querySelector('.more-filters')?.addEventListener('toggle',e=>{moreFiltersOpen=e.target.open;});
 }
 const mapLink=p=>'https://www.openstreetmap.org/?mlat='+encodeURIComponent(p.lat)+'&mlon='+encodeURIComponent(p.lon)+'#map=17/'+encodeURIComponent(p.lat)+'/'+encodeURIComponent(p.lon);
 const foodKinds={

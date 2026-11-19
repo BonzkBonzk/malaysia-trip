@@ -137,3 +137,7 @@ body.live-on{padding-bottom:84px}
 .live-tools button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:1.3rem}
 .live-tools small{font-size:.72rem;font-weight:600;color:#4a5f58}
 .fine.warn{color:#b42318}
+.more-filters{margin:4px 0 6px}
+.more-filters summary{cursor:pointer;font-size:.82rem;color:#2f6f62;font-weight:600}
+.tag-filter{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}
+.tag-filter button{flex:none}
