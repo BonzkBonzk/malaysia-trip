@@ -518,7 +518,7 @@ function renderFilters(){
      '<label class="check"><input type="checkbox" id="featured-attractions" '+(state.onlyFeatured?'checked':'')+'>只看代表景点／旅客推荐</label>'+(state.area==='route'?distance+open:'');
  }
  html+='</div>';
- if(state.category==='food')html+='<p class="filter-note">按你在意的项目排序。样本足够时自动估分，未评分显示为「—」。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='food')html+='<p class="filter-note">按食物、卫生或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
@@ -538,32 +538,39 @@ function foodKind(p){
  return 'other';
 }
 const sourceScoreCache=new Map();
+function assessedVenueId(p){
+ if(publishedEvidence[p.id])return p.id;
+ return matchVenueBranch(p)?.reviewId||p.id;
+}
 function sourceEstimates(p){
- if(sourceScoreCache.has(p.id))return sourceScoreCache.get(p.id);
- const entries=publishedEvidence[p.id];
- if(!entries)return metrics.map(()=>({n:0,score:null}));
- const legacy=entries.filter(entry=>!Array.isArray(entry.signals));
- const scores=scoreReviewText(legacy.map(entry=>entry.summary).join('\n')).map(({positive,negative},i)=>{
-   const signals=entries.map(entry=>entry.signals?.[i]).filter(signal=>signal===-1||signal===0||signal===1);
-   const n=positive+negative+signals.length;
-   const balance=positive-negative+signals.reduce((sum,value)=>sum+value,0);
-   return {n,score:n>=2?Math.round((3+2*balance/(n+.75))*10)/10:null};
+ const id=assessedVenueId(p);
+ if(sourceScoreCache.has(id))return sourceScoreCache.get(id);
+ const entries=publishedEvidence[id]||[];
+ const scores=metrics.map((_,i)=>{
+   const signals=entries.map(entry=>entry.signals?.[i]).filter(value=>value===-1||value===0||value===1);
+   const n=signals.length;
+   const balance=signals.reduce((sum,value)=>sum+value,0);
+   return {n,score:n>=2?Math.round((3+2*balance/(n+2))*10)/10:null};
  });
- sourceScoreCache.set(p.id,scores);
+ sourceScoreCache.set(id,scores);
  return scores;
 }
 function googlePlace(p){
- const q=new URLSearchParams({api:'1',query:[p.title,p.googleArea||stateName(p.area),'Malaysia'].filter(Boolean).join(', ')});
+ const branch=matchVenueBranch(p);
+ const q=new URLSearchParams({api:'1',query:[branch?.label||p.title,p.googleArea||stateName(p.area),'Malaysia'].filter(Boolean).join(', ')});
  if(p.googlePlaceId)q.set('query_place_id',p.googlePlaceId);
  return p.googleReviewsUrl||'https://www.google.com/maps/search/?'+q;
 }
 const unavailablePhotoPaths=new Set();
+function matchVenueBranch(p){
+ if(p.category!=='food'||p.sample)return undefined;
+ const name=simplifiedTitle(p.title);
+ return venuePhotoLocations.find(entry=>entry.area===p.area&&entry.names.includes(name)&&straight(p,entry)<entry.radiusKm);
+}
 function photoFor(p){
  if(p.sample)return undefined;
- const name=simplifiedTitle(p.title);
- const photo=venuePhotos[p.id]||venuePhotoLocations.find(entry=>
-   entry.area===p.area&&entry.names.includes(name)&&straight(p,entry)<entry.radiusKm)||
-   (p.category==='food'&&name==='bingxue'?bingxueProductPhoto:undefined);
+ const photo=venuePhotos[p.id]||matchVenueBranch(p)||
+   (p.category==='food'&&simplifiedTitle(p.title)==='bingxue'?bingxueProductPhoto:undefined);
  return photo?.path&&!unavailablePhotoPaths.has(photo.path)?photo:undefined;
 }
 function placeMedia(p,photo){
@@ -586,18 +593,25 @@ function renderPhotoCredits(){
    (photo.licenseUrl?' · '+externalLink(photo.licenseUrl,photo.license):'')+'</li>').join('');
 }
 function ratingDetails(p){
- const entries=publishedEvidence[p.id]||[], ratings=sourceEstimates(p);
+ const id=assessedVenueId(p), entries=publishedEvidence[id]||[];
  if(!entries.length)return '';
- return '<details class="rating-evidence"><summary>自动评分依据 · '+entries.length+' 条公开来源</summary><p>'+metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ')+'</p><p>卫生分来自食客当时对用餐环境的观察。</p><ul>'+entries.map(entry=>'<li><a href="'+safe(entry.url)+'" target="_blank" rel="noopener">'+safe(entry.label)+'</a> · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
+ const ratings=sourceEstimates(p);
+ const summary=reviewAssessmentNotes[id];
+ const evidenceCount=metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ');
+ const verdict=summary?'<p class="place-desc">'+safe(summary)+'</p>':'';
+ return verdict+'<details class="rating-evidence"><summary>看评分依据 · '+entries.length+' 条资料</summary>'+
+   '<p>'+safe(evidenceCount)+' · 核对于 '+reviewAssessmentDate+'</p>'+
+   '<p>每项至少两条相关观察才估分。卫生只反映食客当时所见的清洁情况。</p>'+
+   '<ul>'+entries.map(entry=>'<li>'+externalLink(entry.url,entry.label)+' · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
 }
 
 function showRatings(p){
  const values=scoresFor(p),auto=sourceEstimates(p);
  return '<div class="rating-row">'+metrics.map((name,i)=>{
    const value=values[i];
-   const source=auto[i].score!=null?'自动 · '+auto[i].n+' 条':p.sample?'演示':state.evidence[p.id]?.[i]?.score!=null?'导入估分':state.ratings[p.id]?.[i]!=null?'我的记录':'资料不足';
+   const source=auto[i].score!=null?'评论证据 · '+auto[i].n+' 条':p.sample?'演示':state.evidence[p.id]?.[i]?.score!=null?'导入估分':state.ratings[p.id]?.[i]!=null?'我的记录':'资料不足';
    return '<span class="aspect-score" title="'+safe(source)+'">'+name+' <b>'+(value==null?'—':'★ '+Number(value).toFixed(1))+'</b></span>';
- }).join('')+(auto.some(v=>v.score!=null)?'<span class="score-mode">自动估分</span>':'')+'</div>'+ratingDetails(p);
+ }).join('')+(auto.some(v=>v.score!=null)?'<span class="score-mode">公开评论估分</span>':'')+'</div>'+ratingDetails(p);
 }
 function showAttractionRating(p){
  const rating=attractionRatings.get(p.id);
@@ -1010,7 +1024,7 @@ $('category-filters').addEventListener('change',event=>{
  if(control.id==='featured-attractions')state.onlyFeatured=control.checked;
  save();limitCards=9;renderPlaces();renderItinerary();
  const note=$('category-filters').querySelector('.filter-note');
- if(control.id==='demo'&&note)note.textContent='按你在意的项目排序。样本足够时自动估分，未评分显示为「—」。'+(state.demo?' 演示店铺为虚构。':'');
+ if(control.id==='demo'&&note)note.textContent='按食物、卫生或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。'+(state.demo?' 演示店铺为虚构。':'');
 });
 $('results-header').addEventListener('click',event=>{
  if(event.target.id==='refresh-places')void discoverPlaces();
