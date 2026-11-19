@@ -62,3 +62,20 @@
 .stop-suggest button:hover{background:#eef6f2}
 .stop-suggest button span{color:#6b7c76;white-space:nowrap}
 .stop-suggest .fine{margin:2px 2px 0;font-size:.76rem}
+
+/* Animated drag-to-reorder */
+.sorting{position:relative;z-index:5;box-shadow:0 8px 22px rgba(15,60,50,.22);background:#fff;border-radius:10px;opacity:.96;cursor:grabbing}
+[data-plan-position].sorting{list-style:none}
+.drag-grip{cursor:grab;touch-action:none;user-select:none}
+
+/* Detailed MapLibre map */
+.map-stage.gl-ready{position:relative;min-height:420px}
+.gl-map{position:absolute;inset:0}
+.map-stage.gl-ready .map-credit{display:none}
+.gl-stop{display:flex;align-items:center;gap:5px;padding:3px 8px 3px 3px;border:0;border-radius:999px;background:#0f5c4c;color:#fff;font-size:12px;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.25);cursor:default;white-space:nowrap}
+.gl-stop b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#fff;color:#0f5c4c;font-size:11px}
+.gl-place{position:relative;width:14px;height:14px;padding:0;border:2px solid #fff;border-radius:50%;background:#7a8f88;box-shadow:0 1px 4px rgba(0,0,0,.3);cursor:pointer}
+.gl-place.food{background:#d9822b}.gl-place.attraction{background:#2f7dd1}.gl-place.fuel{background:#6b7280}
+.gl-place.pick{width:18px;height:18px;background:#e0531f}
+.gl-place span{position:absolute;left:18px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:11px;font-weight:600;color:#1f3a33;text-shadow:0 0 3px #fff,0 0 3px #fff;pointer-events:none}
+@media (max-width:640px){.map-stage.gl-ready{min-height:360px}.gl-place span{display:none}.gl-place.pick span{display:block}}

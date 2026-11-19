@@ -1010,31 +1010,50 @@ $('stops').addEventListener('click',event=>{
  const button=event.target.closest('[data-remove-stop]');if(!button||draft.length<=2)return;
  draft.splice(Number(button.dataset.removeStop),1);renderStops();renderGoogleRoute();scheduleRoute();
 });
-// Drag a stop's number to reorder the route.
-let stopDrag=null;
-$('stops').addEventListener('pointerdown',event=>{
- const grip=event.target.closest('[data-stop-grip]');
- if(!grip||state.planLocked)return;
- event.preventDefault();
- stopDrag={from:Number(grip.dataset.stopGrip),to:null,pointer:event.pointerId};
- grip.setPointerCapture(event.pointerId);
- grip.closest('.stop-row').classList.add('dragging');
-});
-$('stops').addEventListener('pointermove',event=>{
- if(stopDrag?.pointer!==event.pointerId)return;
- const row=document.elementsFromPoint(event.clientX,event.clientY).map(el=>el.closest?.('[data-stop-row]')).find(Boolean);
- $('stops').querySelectorAll('.drop-target').forEach(el=>el.classList.remove('drop-target'));
- if(row&&Number(row.dataset.stopRow)!==stopDrag.from){stopDrag.to=Number(row.dataset.stopRow);row.classList.add('drop-target');}
- else stopDrag.to=null;
-});
-function endStopDrag(event){
- if(stopDrag?.pointer!==event.pointerId)return;
- const {from,to}=stopDrag;stopDrag=null;
- if(to!==null&&to!==from){const [moved]=draft.splice(from,1);draft.splice(to,0,moved);renderStops();renderGoogleRoute();scheduleRoute();}
- else renderStops();
+// Animated drag-to-reorder: the row follows the pointer and the others slide aside.
+function sortable(container,{row,handle,locked,drop}){
+ let d=null;
+ container.addEventListener('pointerdown',event=>{
+   const grip=event.target.closest(handle);
+   if(!grip||!container.contains(grip)||locked()||event.button>0||d)return;
+   const el=grip.closest(row),rows=[...container.querySelectorAll(row)];
+   if(!el||rows.length<2)return;
+   event.preventDefault();grip.setPointerCapture(event.pointerId);
+   const rects=rows.map(r=>r.getBoundingClientRect());
+   const from=rows.indexOf(el),gap=rects.length>1?Math.max(0,rects[1].top-rects[0].bottom):8;
+   d={el,rows,rects,from,to:from,y:event.clientY,pointer:event.pointerId,started:false,step:rects[from].height+gap};
+ });
+ container.addEventListener('pointermove',event=>{
+   if(d?.pointer!==event.pointerId)return;
+   const dy=event.clientY-d.y;
+   if(!d.started){
+     if(Math.abs(dy)<4)return;
+     d.started=true;d.el.classList.add('sorting');
+     d.rows.forEach(r=>{if(r!==d.el)r.style.transition='transform .18s ease';});
+   }
+   d.el.style.transform='translateY('+dy+'px)';
+   const mid=d.rects[d.from].top+d.rects[d.from].height/2+dy;
+   let to=d.from;
+   d.rects.forEach((rc,i)=>{const c=rc.top+rc.height/2;if(i<d.from&&mid<c)to=Math.min(to,i);if(i>d.from&&mid>c)to=Math.max(to,i);});
+   d.to=to;
+   d.rows.forEach((r,i)=>{
+     if(i===d.from)return;
+     const shift=d.from<to&&i>d.from&&i<=to?-d.step:d.from>to&&i<d.from&&i>=to?d.step:0;
+     r.style.transform=shift?'translateY('+shift+'px)':'';
+   });
+ });
+ const end=event=>{
+   if(d?.pointer!==event.pointerId)return;
+   const {rows,from,to,started}=d;d=null;
+   rows.forEach(r=>{r.style.transform='';r.style.transition='';r.classList.remove('sorting');});
+   if(started&&to!==from)drop(from,to,rows);
+ };
+ container.addEventListener('pointerup',end);
+ container.addEventListener('pointercancel',end);
+ container.addEventListener('lostpointercapture',end);
 }
-$('stops').addEventListener('pointerup',endStopDrag);
-$('stops').addEventListener('pointercancel',endStopDrag);
+sortable($('stops'),{row:'[data-stop-row]',handle:'[data-stop-grip]',locked:()=>state.planLocked,
+ drop:(from,to)=>{const [moved]=draft.splice(from,1);draft.splice(to,0,moved);renderStops();renderGoogleRoute();scheduleRoute();}});
 $('add-stop').addEventListener('click',()=>{
  if(draft.length>=8)return;
  const prev=city(draft.at(-2));
@@ -1199,31 +1218,8 @@ function clearPlanDrag(){
  planDrag?.target?.classList.remove('plan-drop-before','plan-drop-after');
  planDrag=null;
 }
-itineraryContent.addEventListener('pointerdown',event=>{
- const grip=event.target.closest('[data-drag]');
- if(!grip||state.planLocked||event.button!==0||planDrag)return;
- itineraryContent.setPointerCapture(event.pointerId);
- planDrag={id:grip.dataset.drag,pointer:event.pointerId,y:event.clientY,target:null,after:false};
-});
-itineraryContent.addEventListener('pointermove',event=>{
- if(planDrag?.pointer!==event.pointerId||Math.abs(planDrag.y-event.clientY)<5&&!planDrag.target)return;
- planDrag.target?.classList.remove('plan-drop-before','plan-drop-after');
- const row=document.elementFromPoint(event.clientX,event.clientY)?.closest('[data-plan-position]');
- planDrag.target=row&&itineraryContent.contains(row)&&row.dataset.planRow!==planDrag.id?row:null;
- if(!planDrag.target)return;
- const rect=row.getBoundingClientRect();
- planDrag.after=event.clientY>=rect.top+rect.height/2;
- row.classList.add(planDrag.after?'plan-drop-after':'plan-drop-before');
-});
-itineraryContent.addEventListener('pointerup',event=>{
- if(planDrag?.pointer!==event.pointerId)return;
- const {id,target,after}=planDrag;
- clearPlanDrag();
- if(target&&reorderPlan(id,target.dataset.planRow,after))notify('行程顺序已更新');
-});
-for(const name of ['pointercancel','lostpointercapture'])itineraryContent.addEventListener(name,event=>{
- if(planDrag?.pointer===event.pointerId)clearPlanDrag();
-});
+sortable(itineraryContent,{row:'[data-plan-position]',handle:'[data-drag]',locked:()=>state.planLocked,
+ drop:(from,to,rows)=>{const ids=rows.map(r=>r.dataset.planRow);if(reorderPlan(ids[from],ids[to],to>from))notify('行程顺序已更新');}});
 $('top-plan').addEventListener('click',()=>$('itinerary').scrollIntoView({behavior:'smooth',block:'start'}));
 $('close-swap').addEventListener('click',()=>$('swap-dialog').close());
 $('close-rating').addEventListener('click',()=>$('rating-dialog').close());
