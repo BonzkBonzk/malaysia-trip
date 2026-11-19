@@ -116,3 +116,5 @@
 .live-bar .live-bar-main{flex:1;display:flex;flex-direction:column;align-items:flex-start;padding:6px 12px;font-size:1rem;background:transparent;text-align:left}
 .live-bar-main small{opacity:.75;font-size:.72rem}.live-bar-main span{font-size:.85rem;opacity:.9}
 body.live-on{padding-bottom:84px}
+
+.live-bar[hidden]{display:none!important}
