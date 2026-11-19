@@ -1,4 +1,130 @@
 const publishedEvidence = {
+  "osm-boardwalk-3.1356-101.6856": [
+    {
+      "label": "Wanderlog · Google 食客（2025 年 3 月）",
+      "url": "https://wanderlog.com/place/details/3697909/boardwalk",
+      "summary": "食客喜欢鸡尾酒，并称赞池畔酒吧的服务。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Wanderlog · Google 食客（2025 年 8 月）",
+      "url": "https://wanderlog.com/place/details/3697909/boardwalk",
+      "summary": "另一位食客喜欢鲜椰子，也称赞吧台接待。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Tripadvisor · 堂食食客（2025 年 7 月）",
+      "url": "https://www.tripadvisor.com.my/Restaurant_Review-g298570-d1115437-Reviews-Boardwalk-Kuala_Lumpur_Wilayah_Persekutuan.html",
+      "summary": "食客认为巨型汉堡多汁，服务员会留意用餐需求。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    }
+  ],
+  "osm-gurneysflavour-3.1357-101.6881": [
+    {
+      "label": "Restaurant Guru · Google 食客",
+      "url": "https://restaurantguru.com/Gurneys-Flavour-Kuala-Lumpur",
+      "summary": "一位食客表示餐点份量偏小、上桌时偏冷，等了逾 45 分钟。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Restaurant Guru · 另一位 Google 食客",
+      "url": "https://restaurantguru.com/Gurneys-Flavour-Kuala-Lumpur",
+      "summary": "另一位食客对餐点熟度有疑虑，食物与服务均给低分。",
+      "signals": [
+        -1,
+        null,
+        -1
+      ]
+    },
+    {
+      "label": "Restaurant Guru · 第三位 Google 食客",
+      "url": "https://restaurantguru.com/Gurneys-Flavour-Kuala-Lumpur",
+      "summary": "食客表示结账时反复询问金额才获得回应。",
+      "signals": [
+        null,
+        null,
+        -1
+      ]
+    }
+  ],
+  "osm-qasiookitchen-3.1356-101.6883": [
+    {
+      "label": "Restaurant Guru · Google 食客",
+      "url": "https://restaurantguru.com/Qasioo-Kitchen-Kuala-Lumpur",
+      "summary": "食客称赞餐点，服务给满分。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Restaurant Guru · 另一位 Google 食客",
+      "url": "https://restaurantguru.com/Qasioo-Kitchen-Kuala-Lumpur",
+      "summary": "另一位食客正面评价食物和接待。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    },
+    {
+      "label": "Restaurant Guru · 堂食午餐评分",
+      "url": "https://restaurantguru.com/Qasioo-Kitchen-Kuala-Lumpur",
+      "summary": "一位午餐食客给食物和服务满分，环境给三分。",
+      "signals": [
+        1,
+        null,
+        1
+      ]
+    }
+  ],
+  "osm-planetcafeplanetariumnegara-3.1392-101.6895": [
+    {
+      "label": "Malay Business · 历史地点资料",
+      "url": "https://www.malay.business/en/planet-cafe-planetarium-negara",
+      "summary": "目录记录地点在国家天文馆，并标明资料可能过时。",
+      "signals": []
+    }
+  ],
+  "osm-larica-3.1358-101.6881": [
+    {
+      "label": "OpenAlfa · 地点目录",
+      "url": "https://malaysia-streets.openalfa.com/streets/platinum-sentral-ground-atrium-corridor-kuala-lumpur",
+      "summary": "地图记录位于 Platinum Sentral 一带。",
+      "signals": []
+    },
+    {
+      "label": "Top-Rated.Online · 同名咖啡店地址",
+      "url": "https://www.top-rated.online/cities/Kuala%2BLumpur/place/p/10861958/La%2BRica%2BCoffee",
+      "summary": "可读的 Google 评论标注的是 Q Sentral 12 楼，地点关系待核对。",
+      "signals": []
+    }
+  ],
+  "osm-karakkare-3.1358-101.6880": [
+    {
+      "label": "OpenAlfa · 地点目录",
+      "url": "https://malaysia-streets.openalfa.com/streets/platinum-sentral-ground-atrium-corridor-kuala-lumpur",
+      "summary": "目录收录 Platinum Sentral 的同名地点。",
+      "signals": []
+    }
+  ],
   "village-park": [
     {
       "label": "Bernie and Cream · 2026",
@@ -1068,6 +1194,12 @@ const publishedEvidence = {
 };
 
 const reviewAssessmentNotes = {
+  "osm-boardwalk-3.1356-101.6856": "Hilton Kuala Lumpur 的池畔酒吧。鸡尾酒、鲜椰子和汉堡有具体好评，几位食客都称赞接待。可见样本偏正面，用餐区清洁资料不足。",
+  "osm-gurneysflavour-3.1357-101.6881": "Platinum Sentral 底层店。可读的几条 Google 评论集中提到等候、餐点温度或结账沟通问题。赶车时我会优先选别家。现场清洁资料不足。",
+  "osm-qasiookitchen-3.1356-101.6883": "Jalan Stesen Sentral 2 的底层店。几位食客对餐点和服务评价一致偏好，但没说明具体哪道菜最稳，清洁也缺少具体记录。",
+  "osm-planetcafeplanetariumnegara-3.1392-101.6895": "找到国家天文馆的历史地点资料。目前营业状态与三项口碑均待核对。",
+  "osm-larica-3.1358-101.6881": "这张地图卡指向 Platinum Sentral。已找到的 Google 评论标注 Q Sentral 12 楼，地点关系仍待核对，三项留空。",
+  "osm-karakkare-3.1358-101.6880": "找到 Platinum Sentral 的地点记录，暂缺可归属到这家店的公开食客评论。",
   "semuka-seri-negara": "去 Seri Negara 顺道吃本地点心更合适。椰浆饭和炸香蕉球反馈较好，鸡扒一类西式菜口碑较不稳。服务有称赞也有等候反馈，卫生缺少具体记录。",
   "san-cai-kepong-baru": "奶油猴头菇是评论中最一致的推荐。接待体验有分歧。卫生方面有食客明确提到厕所清洁待改善，现有具体样本不足以给分。",
   "bingxue-danau-desa": "水果茶有具体好评，甜度与订单准确度较不稳定。下单时值得核对糖度和件数，堂食卫生资料不足。此判断只适用于 Taman Danau Desa。",
