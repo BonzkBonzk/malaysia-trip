@@ -74,19 +74,26 @@
    await loadNearby();
    if(!liveRoute){drawerHtml='<p class="fine">要先算出前方路线才能找沿路餐厅。</p>';render();return;}
    const inPlan=new Set(state.plan.map(p=>p.id));
-   const rows=[...livePlaces.values()].filter(p=>p.category==='food'&&!p.sample&&!inPlan.has(p.id)&&p.recommend!==false).map(p=>{
+   const chain=/\b(kfc|mcdonald|subway|burger king|pizza hut|domino|starbucks|marrybrown|texas chicken|a&w|tealive|zus coffee|gigi coffee|7-eleven|family ?mart|secret recipe|old town|oldtown|nando|sushi king|llao llao|chatime|coolblog|daily fresh)/i;
+   const rows=[...livePlaces.values()].filter(p=>p.category==='food'&&!p.sample&&!inPlan.has(p.id)&&p.recommend!==false&&(p.recommend===true||p.subclass!=='fast_food'&&!chain.test(p.title))).map(p=>{
      const m=bestMatch(p);if(!m)return null;
      const pick=p.recommend===true;
      if(m.distance>(pick?8:2.5))return null;
      const arrive=new Date(Date.now()+(m.fromStart+dwellBeforeLeg(m.leg))*60000);
      return {p,m,pick,arrive,open:opening(p.hours,arrive),detour:Math.round(m.distance*2/30*60)};
-   }).filter(Boolean).filter(r=>r.open!==false)
-     .sort((a,b)=>(b.pick-a.pick)||(a.m.progress-b.m.progress)).slice(0,8);
+   }).filter(Boolean);
+   const closedPicks=rows.filter(r=>r.pick&&r.open===false).length;
+   const picks=rows.filter(r=>r.pick&&r.open!==false).sort((a,b)=>a.m.progress-b.m.progress);
+   // Only top up with unverified places when there are few recommended ones.
+   const others=picks.length>=3?[]:rows.filter(r=>!r.pick&&r.open!==false).sort((a,b)=>a.m.distance-b.m.distance).slice(0,5-picks.length);
+   rows.length=0;rows.push(...picks.slice(0,8),...others);
    drawerHtml=rows.length?'<ul class="live-suggest">'+rows.map(r=>'<li><div><strong>'+safe(r.p.title)+'</strong>'+(r.pick?' <span class="tag caveat">推荐</span>':' <span class="tag">未核实</span>')+
      '<small>'+safe(clock(r.arrive))+' 左右到 · 离路线约 '+safe(km(r.m.distance))+(r.detour?' · 绕路约 '+r.detour+' 分钟':'')+(r.open===true?' · 到时营业':r.p.hours?'':' · 营业时间待核对')+'</small>'+
      (r.p.mustEat?'<small>必吃：'+safe(r.p.mustEat.map(x=>x.name).slice(0,3).join('、'))+'</small>':'')+
      '</div><button type="button" class="primary" data-live-add="'+safe(r.p.id)+'">加入</button></li>').join('')+'</ul>'
      :'<p class="fine">前方路线附近暂时没有找到合适的餐厅。推荐资料还在补充中，可在 Google Maps 搜附近餐厅。</p>';
+   if(closedPicks)drawerHtml='<p class="fine">另有 '+closedPicks+' 家推荐店到时已打烊，没有列出。</p>'+drawerHtml;
+   if(rows.length&&!rows.some(r=>r.pick))drawerHtml='<p class="fine">这一段路还没有核实过的推荐店，下面是附近未核实的本地餐馆，仅供参考。</p>'+drawerHtml;
    const o=here||points[0];
    drawerHtml+=externalLink('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('restaurants near '+o.lat.toFixed(5)+','+o.lon.toFixed(5)),'在 Google Maps 找附近餐厅','live-link');
    render();
@@ -99,7 +106,7 @@
      const m=bestMatch(p);
      const onRoute=m&&m.distance<=2;
      const dist=onRoute?m.progress+m.distance:straight(o,p)*1.3;
-     const min=onRoute?m.fromStart+dwellBeforeLeg(m.leg):dist/50*60;
+     const min=Math.max(1,onRoute?Math.max(m.fromStart+dwellBeforeLeg(m.leg),dist):dist/50*60);
      return {p,ahead:onRoute,dist,min};
    }).filter(r=>r.dist<=60).sort((a,b)=>(b.ahead-a.ahead)||(a.dist-b.dist)).slice(0,6);
    drawerHtml=(rows.length?'<ul class="live-suggest">'+rows.map(r=>'<li><div><strong>'+safe(r.p.title)+'</strong>'+(r.ahead?' <span class="tag soft">在路线上</span>':'')+
