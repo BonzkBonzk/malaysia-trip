@@ -575,7 +575,7 @@ function renderFilters(){
    const tags=[...new Set([...livePlaces.values()].filter(p=>p.category===state.category&&(state.showAll||isPick(p))).flatMap(p=>p.tags||[]))].sort((a,b)=>a.localeCompare(b,'zh'));
    if(tags.length)html+='<div class="tag-filter" aria-label="按标签筛选">'+tags.map(t=>'<button type="button" data-tag-filter="'+safe(t)+'" aria-pressed="'+String(state.tagFilter.includes(t))+'">'+safe(t)+'</button>').join('')+'</div>';
  }
- if(state.category==='food')html+='<p class="filter-note">'+(state.showAll?'':'默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。Google 评论 2,000 条以上的名店即使不推荐也会列在后面，并注明要注意什么。')+'按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='food')html+='<p class="filter-note" title="默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。Google 评论 2,000 条以上的名店即使不推荐也会列在后面并注明原因。食物、服务各至少两条相关观察才估分；卫生只作备注。">ⓘ 只列核实过的店 · 名店另附提醒</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
@@ -655,10 +655,8 @@ function ratingDetails(p){
  const ratings=sourceEstimates(p);
  const summary=reviewAssessmentNotes[id];
  const evidenceCount=metrics.map((label,i)=>label+' '+ratings[i].n+' 条').join(' · ');
- const verdict=summary?'<p class="place-desc">'+safe(summary)+'</p>':'';
- return verdict+'<details class="rating-evidence"><summary>看评分依据 · '+entries.length+' 条资料</summary>'+
-   '<p>'+safe(evidenceCount)+' · 核对于 '+reviewAssessmentDate+'</p>'+
-   '<p>食物、服务每项至少两条相关观察才估分。卫生只作备注，反映食客当时所见的清洁情况，不参与排序。</p>'+
+ return '<details class="rating-evidence"><summary>看评价</summary>'+(summary?'<p class="verdict">'+safe(summary)+'</p>':'')+
+   '<p class="fine">'+safe(evidenceCount)+' · 核对于 '+reviewAssessmentDate+'</p>'+
    '<ul>'+entries.map(entry=>'<li>'+externalLink(entry.url,entry.label)+' · '+safe(entry.summary)+'</li>').join('')+'</ul></details>';
 }
 
@@ -697,7 +695,8 @@ function placeCard({p,match,open},pick){
  const featured=p.category==='attraction'&&attractionBadge(p);
  const badge=pick?.p.id===p.id?'<span class="tag">建议补油</span>':p.sample?'<span class="tag alert">虚构演示</span>':featured?'<span class="tag attraction-badge">'+featured+'</span>':'';
  let plusDrive='';
- if(detour)plusDrive='<span class="tag '+(detour.min>=25?'alert':'')+'">加开约 '+safe(timeText(detour.min))+' · '+safe(km(detour.km))+'</span>';
+ if(detour)plusDrive=detour.min>=1?'<span class="tag '+(detour.min>=25?'alert':'')+'">绕路 +'+safe(timeText(detour.min))+'</span>':'<span class="tag soft">顺路</span>';
+ else if(match&&p.category!=='fuel'&&!p.sample&&detourQueue.has(p.id))plusDrive='<span class="tag soft">绕路计算中…</span>';
  return '<article class="card place'+(photo?' with-photo':'')+'">'+placeMedia(p,photo)+'<div class="place-body">'+
    '<div class="place-title"><h3>'+safe(p.title)+'</h3>'+badge+'</div>'+
    '<div class="place-meta"><span>'+safe(zoneLabels.get(p.zone)||region(p.area)?.title||'')+' · '+safe(p.category==='food'?foodKinds[foodKind(p)]+(p.tag&&p.tag!==foodKinds[foodKind(p)]?' · '+p.tag:''):p.tag)+'</span>'+
@@ -705,12 +704,11 @@ function placeCard({p,match,open},pick){
    (p.detail?'<p class="place-desc">'+safe(p.detail)+'</p>':'')+pickExtras(p)+
    (p.category==='food'?showRatings(p):p.category==='attraction'?showAttractionRating(p):'')+
    '<div class="place-info"><span>'+safe(hours)+'</span><span>'+safe(p.price||(p.category==='attraction'?'票价待核对':p.category==='food'?'价格待核对':''))+'</span>'+plusDrive+'</div>'+
-   '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'已加入':state.planLocked?'行程已固定':'＋ 加入行程')+'</button>'+
-   (p.category!=='fuel'&&!p.sample?'<button type="button" class="text-button" data-rate="'+safe(p.id)+'">我的记录</button>':'')+
-   (!p.sample?externalLink(googleDirections([p],{fromHere:true}),p.ferryTransfer?'导航到客运码头':'导航到这里'):'')+
-   (match&&p.category!=='fuel'&&!p.sample&&!detour?'<button type="button" class="text-button" data-detour="'+safe(p.id)+'">估算绕路</button>':'')+
-   (!p.sample?'<a href="'+safe(sourceUrl)+'" target="_blank" rel="noopener">'+(p.osm?'地图资料':'查看来源')+'</a>':'')+
-   (!p.sample?'<a class="maps-review" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener">Google Maps 评论</a>':'')+
+   '<div class="place-actions"><button type="button" class="primary" data-add="'+safe(p.id)+'"'+(linked||state.planLocked?' disabled':'')+'>'+(linked?'✓ 已加入':state.planLocked?'已固定':'＋ 加入')+'</button>'+
+   (p.category!=='fuel'&&!p.sample?'<button type="button" class="icon-btn" data-rate="'+safe(p.id)+'" title="我的记录" aria-label="我的记录">✎</button>':'')+
+   (!p.sample?'<a class="icon-btn" href="'+safe(googleDirections([p],{fromHere:true}))+'" target="_blank" rel="noopener" title="'+(p.ferryTransfer?'导航到客运码头':'导航')+'" aria-label="导航">🧭</a>':'')+
+   (!p.sample?'<a class="icon-btn" href="'+safe(sourceUrl)+'" target="_blank" rel="noopener" title="'+(p.osm?'地图资料':'查看来源')+'" aria-label="来源">🔗</a>':'')+
+   (!p.sample?'<a class="icon-btn" href="'+safe(googlePlace(p))+'" target="_blank" rel="noopener" title="Google Maps 评论" aria-label="Google Maps 评论">💬</a>':'')+
    (photo?externalLink(photo.source,'照片来源','photo-source'):'')+
    (p.tickets?'<a href="'+safe(p.tickets)+'" target="_blank" rel="noopener">购票</a>':'')+'</div></div></article>';
 }
@@ -723,6 +721,7 @@ function renderPlaces(){
  $('results-header').innerHTML='<div><strong>'+safe(area+' · '+headline)+'</strong>'+
    (searchStatus?'<span role="status">'+safe(searchStatus)+'</span>':'')+'</div>'+
    (zoneLabels.has(state.area)?'':'<button type="button" id="refresh-places"'+(searchLoading?' disabled':'')+'>查找地图地点</button>');
+ queueDetours(order.slice(0,limitCards));
  $('place-list').innerHTML=items.length?order.slice(0,limitCards).map(item=>placeCard(item,pick)).join('')+
     (items.length>limitCards?'<button type="button" class="add-line" id="more-results">查看更多地点</button>':''):
     '<div class="card empty">'+(searchLoading?'正在查找可加入行程的地点。':(state.showAll?'没有符合现有筛选的地点。可以放宽范围或选另一个州属。':'这里还没有核实过的推荐地点。可勾选「显示全部地点」先看未核实的地点，或选另一个地区。'))+'</div>';
@@ -737,20 +736,41 @@ function nearestAnchor(p,match,leg){
  const end=leg.shape[j<0?leg.shape.length-1:j];
  return [start,end];
 }
-async function estimateDetour(button){
+// Estimate the road detour for the cards on screen automatically, one at a time.
+const detourQueue=new Set(),detourFailed=new Set();let detourBusy=false;
+function queueDetours(items){
+ if(!route)return;
+ for(const {p,match} of items){
+   if(!match||p.category==='fuel'||p.sample||detourFailed.has(p.id))continue;
+   const m=bestMatch(p);if(!m)continue;
+   if(!detours.has(routeKey(points)+'|'+p.id+'|'+m.leg))detourQueue.add(p.id);
+ }
+ void runDetours();
+}
+async function runDetours(){
+ if(detourBusy)return;detourBusy=true;
+ try{
+   while(detourQueue.size){
+     const id=detourQueue.values().next().value;
+     const ok=await estimateDetour({dataset:{detour:id}},true);
+     detourQueue.delete(id);if(!ok)detourFailed.add(id);
+   }
+ }finally{detourBusy=false;}
+}
+async function estimateDetour(button,quiet=false){
  const p=livePlaces.get(button.dataset.detour);
  const match=p&&bestMatch(p);
- if(!p||!match||!route)return;
+ if(!p||!match||!route)return false;
  const key=routeKey(points)+'|'+p.id+'|'+match.leg;
  const [start,end]=nearestAnchor(p,match,route.legs[match.leg]);
- if(straight(start,end)<.05){notify('这里没有足够的道路范围可以比较');return;}
- button.textContent='计算中…';button.disabled=true;
+ if(straight(start,end)<.05){if(!quiet)notify('这里没有足够的道路范围可以比较');detours.set(key,{km:0,min:0});return true;}
+ if(!quiet){button.textContent='计算中…';button.disabled=true;}
  try{
    const baseline=await requestRoad([start,end],false);
    const diverted=await requestRoad([start,p,end],false);
    detours.set(key,{km:Math.max(0,(diverted.distance-baseline.distance)/1000),min:Math.max(0,(diverted.duration-baseline.duration)/60)});
-   renderPlaces();renderItinerary();
- }catch{notify('暂时无法估算这个地点的道路绕行时间');button.textContent='估算绕路';button.disabled=false;}
+   renderPlaces();renderItinerary();return true;
+ }catch{if(!quiet)notify('暂时无法估算这个地点的道路绕行时间');return false;}
 }
 function automaticPlanEvents(){
  const events=[];
@@ -864,8 +884,8 @@ function renderItinerary(){
  const sortControl=canSort?'<button type="button" class="text-button" id="plan-order" aria-pressed="'+Boolean(layout)+'"'+(locked?' disabled':'')+'>'+(layout?'恢复按路线排序':'手动排序')+'</button>':'';
  const lock='<button type="button" class="plan-lock" id="lock-plan" aria-pressed="'+locked+'">'+(locked?'已固定 · 解锁':'固定行程')+'</button>';
  let html='<div class="itinerary-head"><strong>'+safe(state.date)+' · '+safe(state.time)+' 出发</strong><div class="itinerary-controls">'+lock+sortControl+reset+'</div></div>'+
-   '<p class="fine">已加 '+state.plan.length+' 个地点 · 马来西亚当地时间</p>';
- if(layout&&!locked)html+='<p class="fine">拖住地点的 ⋮⋮ 移动，或用上移／下移按钮。起点和终点由路线规划设定。</p>';
+   '';
+ if(layout&&!locked)html+='<p class="fine">拖 ⋮⋮ 调整顺序</p>';
  if(locked)html+='<p class="fine">行程编辑已锁定。</p>';
  if(layout&&manualRoad.key===itineraryRouteKey(layout)&&manualRoad.loading)html+='<p class="fine" role="status">正在按手动顺序重算车程…</p>';
  else if(layout&&layout.some(e=>e.type==='place')&&(!manualRoad.result||manualRoad.key!==itineraryRouteKey(layout)))html+='<p class="fine">暂时没有手动路线的车程估算，可在 Google Maps 查看。</p>';

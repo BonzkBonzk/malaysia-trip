@@ -120,22 +120,22 @@
    document.body.classList.toggle('live-on',active);
    if(!active){
      const ok=points.length>=2;
-     panel.innerHTML='<button type="button" class="primary live-start" data-live="start"'+(ok?'':' disabled')+'>▶ 现在出发</button>'+
-       '<p class="fine">'+(ok?'按下后用手机定位，实时算出到每一站的时间。开着网页才会更新。':'先在上方计算路线，再按现在出发。')+'</p>';
+     panel.innerHTML='<button type="button" class="live-start-icon" data-live="start"'+(ok?'':' disabled')+' title="'+(ok?'现在出发：用定位实时算到每站的时间（网页开着才更新）':'先计算路线')+'" aria-label="现在出发">▶</button><span class="live-start-label">现在出发</span>';
      bar.hidden=true;return;
    }
    const next=ahead[0],ne=eta[0];
    const started=mins(Date.now()-live.startedAt);
-   let html='<div class="live-head"><strong>行程进行中</strong><span>已出发 '+safe(timeText(started))+'</span><button type="button" class="text-button" data-live="stop">结束行程</button></div>'+
-     '<p class="fine">'+safe(busy?'正在更新时间…':geoNote||'正在取得定位…')+'</p>';
+   const warn=/没有|取不到|不支持|算不到/.test(geoNote)?geoNote:'';
+   let html='<div class="live-head"><strong>● 进行中</strong><span>'+safe(timeText(started))+(busy?' · 更新中':'')+'</span><button type="button" class="icon-btn" data-live="stop" title="结束行程" aria-label="结束行程">■</button></div>'+
+     (warn?'<p class="fine warn">'+safe(warn)+'</p>':'');
    if(!next)html+='<p class="live-next">全部停留点都已完成 🎉</p>';
    else{
      html+='<div class="live-next"><small>下一站</small><strong>'+safe(next.p.title)+'</strong>'+
-       (ne?'<span>预计 <b>'+safe(clock(ne.arrive))+'</b> 到 · 还有 '+safe(km(ne.km))+' · '+safe(timeText(ne.min))+'</span>':'<span>计算中…</span>')+
-       '<div class="live-actions">'+externalLink(googleDirections([next.p],{fromHere:true}),'导航到这里','primary-link')+
-       '<button type="button" class="text-button" data-live="arrived">已到达 ✓</button></div></div>';
+       (ne?'<span><b>'+safe(clock(ne.arrive))+'</b> 到 · '+safe(km(ne.km))+' · '+safe(timeText(ne.min))+'</span>':'<span>计算中…</span>')+
+       '<div class="live-actions"><a class="primary-link" href="'+safe(googleDirections([next.p],{fromHere:true}))+'" target="_blank" rel="noopener">🧭 导航</a>'+
+       '<button type="button" class="text-button" data-live="arrived">✓ 到了</button></div></div>';
    }
-   html+='<div class="live-tools"><button type="button" data-live="food" aria-pressed="'+(drawer==='food')+'">🍜 加餐厅</button><button type="button" data-live="fuel" aria-pressed="'+(drawer==='fuel')+'">⛽ 要加油</button></div>';
+   html+='<div class="live-tools"><button type="button" data-live="food" aria-pressed="'+(drawer==='food')+'" title="加餐厅">🍜<small>餐厅</small></button><button type="button" data-live="fuel" aria-pressed="'+(drawer==='fuel')+'" title="要加油">⛽<small>油站</small></button></div>';
    if(drawer)html+='<div class="live-drawer">'+drawerHtml+'</div>';
    if(ahead.length>1){
      html+='<ol class="live-list">'+ahead.slice(1).map((s,i)=>{

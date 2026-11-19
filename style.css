@@ -119,3 +119,21 @@ body.live-on{padding-bottom:84px}
 
 .live-bar[hidden]{display:none!important}
 .tag.famous{background:#fdeee2;color:#8a3b12;border:1px solid #f2c9a8}
+
+/* Compact UI */
+.icon-btn{display:inline-grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid #dce8e4;border-radius:10px;background:#fff;font-size:16px;line-height:1;text-decoration:none;cursor:pointer}
+.icon-btn:hover{background:#eef6f2}
+.place-actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.place-desc{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rating-evidence summary{cursor:pointer;font-size:.82rem;color:#2f6f62}
+.rating-evidence .verdict{margin:6px 0;font-size:.9rem;line-height:1.55}
+.filter-note{cursor:help;font-size:.78rem}
+.live-trip{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.live-trip>*{flex-basis:100%}
+.live-trip>.live-start-icon,.live-trip>.live-start-label{flex-basis:auto}
+.live-start-icon{width:46px;height:46px;border:0;border-radius:50%;background:#0f5c4c;color:#fff;font-size:18px;cursor:pointer;box-shadow:0 3px 10px rgba(15,92,76,.3)}
+.live-start-icon:disabled{background:#b9c9c3;box-shadow:none;cursor:not-allowed}
+.live-start-label{font-weight:700;color:#0f5c4c}
+.live-tools button{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:1.3rem}
+.live-tools small{font-size:.72rem;font-weight:600;color:#4a5f58}
+.fine.warn{color:#b42318}
