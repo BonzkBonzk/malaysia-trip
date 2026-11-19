@@ -479,14 +479,16 @@ function getResults(){
      if(!hasRoute()&&points.length&&(!canDriveTogether(points)||!points.some(a=>a.area===p.area||straight(p,a)<8)))continue;
    }
    if((p.category==='food'||p.category==='attraction')&&!state.showAll&&!isPick(p))continue;
-   if(!state.showAll&&state.pickTier==='top'&&p.tier==='more')continue;
+   if(!state.showAll&&state.pickTier==='top'&&(p.tier==='more'||isFamous(p)))continue;
    if(state.tagFilter.length&&!state.tagFilter.every(t=>(p.tags||[]).includes(t)))continue;
    if(p.category==='food'&&(!eligibleRating(p)||(state.foodType!=='all'&&foodKind(p)!==state.foodType)))continue;
    const likelyTime=timeAtPlace(p,match),open=likelyTime?opening(p.hours,likelyTime):null;
    if(state.onlyOpen&&open!==true)continue;
    items.push({p,match,open});
  }
- items.sort((a,b)=>{
+  items.sort((a,b)=>{
+   const rank=pickRank(a.p)-pickRank(b.p);
+   if(rank&&state.category!=='fuel')return rank;
    if(state.category==='food'){
     const score=weightedScore(b.p)-weightedScore(a.p);
     if(score)return score;
@@ -505,13 +507,18 @@ function getResults(){
 }
 // A pick is a place we checked and recommend. Food needs an explicit recommend:true;
 // attractions also count when they already carry a landmark/traveller badge.
-function isPick(p){return p.recommend===true||(p.category==='attraction'&&p.recommend!==false&&!!attractionBadge(p));}
+// Well-known places (2,000+ Google reviews) stay listed even when not recommended, with a warning tag.
+const FAMOUS_MIN_REVIEWS=2000;
+function isFamous(p){return p.recommend===false&&(p.googleCount||0)>=FAMOUS_MIN_REVIEWS&&!/停业/.test(p.notRecommended||'');}
+function isPick(p){return p.recommend===true||isFamous(p)||(p.category==='attraction'&&p.recommend!==false&&!!attractionBadge(p));}
+function pickRank(p){return p.recommend===true?(p.tier==='more'?1:0):isFamous(p)?2:p.recommend===false?4:3;}
 function pickExtras(p){
  let html='';
  for(const t of p.tags||[])html+='<span class="tag soft">'+safe(t)+'</span>';
  if(p.googleRating)html+='<span class="tag">Google ★ '+safe(Number(p.googleRating).toFixed(1))+(p.googleCount?' · '+safe(Number(p.googleCount).toLocaleString('en-MY'))+' 则':'')+'</span>';
  if(p.recommend===true&&p.caveat)html+='<span class="tag caveat" title="为什么还推荐">'+safe(p.caveat)+'</span>';
- if(p.recommend===false&&p.notRecommended)html+='<span class="tag alert">不推荐：'+safe(p.notRecommended)+'</span>';
+ if(isFamous(p))html+='<span class="tag famous">名店，但要注意：'+safe(p.notRecommended)+'</span>';
+ else if(p.recommend===false&&p.notRecommended)html+='<span class="tag alert">不推荐：'+safe(p.notRecommended)+'</span>';
  const list=p.mustEat||p.mustDo;
  const must=list&&list.length?'<p class="must-list"><b>'+(p.mustEat?'必吃':'必玩')+'</b> '+list.map(x=>safe(x.name)+(x.price?' <span class="must-price">'+safe(x.price)+'</span>':'')).join(' · ')+(p.priceNote?' <small>（'+safe(p.priceNote)+'）</small>':'')+'</p>':'';
  return (html?'<div class="pick-tags">'+html+'</div>':'')+must;
@@ -564,11 +571,11 @@ function renderFilters(){
  }
  html+='</div>';
  if(state.category!=='fuel'){
-   html+='<div class="filters"><label>推荐范围<select id="pick-tier">'+option('top','只看精选',state.pickTier)+option('all','精选＋更多推荐',state.pickTier)+'</select></label></div>';
+   html+='<div class="filters"><label>推荐范围<select id="pick-tier">'+option('top','只看精选',state.pickTier)+option('all','精选＋更多＋名店',state.pickTier)+'</select></label></div>';
    const tags=[...new Set([...livePlaces.values()].filter(p=>p.category===state.category&&(state.showAll||isPick(p))).flatMap(p=>p.tags||[]))].sort((a,b)=>a.localeCompare(b,'zh'));
    if(tags.length)html+='<div class="tag-filter" aria-label="按标签筛选">'+tags.map(t=>'<button type="button" data-tag-filter="'+safe(t)+'" aria-pressed="'+String(state.tagFilter.includes(t))+'">'+safe(t)+'</button>').join('')+'</div>';
  }
- if(state.category==='food')html+='<p class="filter-note">'+(state.showAll?'':'默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。')+'按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
+ if(state.category==='food')html+='<p class="filter-note">'+(state.showAll?'':'默认只列核实过、值得去的店；低星但好吃的会用小标签说明原因。Google 评论 2,000 条以上的名店即使不推荐也会列在后面，并注明要注意什么。')+'按食物或服务排序。公开评论中每项至少有两条相关观察才估分，其余显示「—」。卫生只在食客有具体描述时作备注，不参与排序。'+(state.demo?' 演示店铺为虚构。':'')+'</p>';
  if(state.category==='attraction')html+='<p class="filter-note">综合排序参考 Tripadvisor 评分与评价数量，代表景点小幅加权。旅客推荐需至少 4.2 分及 150 则评价。</p>';
  if(state.category==='fuel')html+='<p class="filter-note">优先建议有方向资料的 PLUS 站。里程从出发点计算，实际补油时机由你的油量决定。</p>';
  $('category-filters').innerHTML=html;
